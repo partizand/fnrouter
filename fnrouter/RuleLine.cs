@@ -149,6 +149,14 @@ namespace fnrouter
             string args = LDecoder.GetValue("Arg");
             args = ReplaceVar.ReplDate(args);
 
+            cmd = GetFullFileName(cmd);
+
+            if (!File.Exists(cmd))
+            {
+                Log.LogMessage(LogType.Error, "Не найден файл для запуска "+cmd);
+                return;
+            }
+
             if (args.Contains("%")) // Запуск на каждый из файлов
             {
                 string tArg;
@@ -345,7 +353,8 @@ namespace fnrouter
                 return false;
             }
         }
-                
+        
+        
         //-------------------------------------------------------------------------------------------------
         /// <summary>
         /// Создание каталога с отловом исключения и записью в лог, если ошибка. Log может быть null, тогда лога нет

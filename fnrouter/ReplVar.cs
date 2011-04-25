@@ -131,12 +131,43 @@ namespace fnrouter
                     sValue = sValue.Replace(".", ""); // Убираем точку из раширения
                     str = str.Replace("%" + var + "%", sValue);
                 }
-
-
+                if (var.Equals("Nalog", StringComparison.CurrentCultureIgnoreCase)) // Налоговая, должна быть последняя в строке!
+                {
+                    str = str.Replace("%" + var + "%", ""); // Убираем %nalog% из пути
+                    str = GetNalogDir(str, FileName); // Получаем каталог, где лежит файл налоговой
+                }
                 var = GetStrVar(str,ReplType.FileName);
             }
             return str;
         }
+
+        /// <summary>
+        /// Поиск каталога содержащего файл налоговой, по имени ответного файла из налоговой
+        /// </summary>
+        /// <param name="FileName"></param>
+        /// <returns></returns>
+        static string GetNalogDir(string RootDir, string FileName)
+        {
+            // Нужно найти каталог в которм есть файл SBСxxx..xxxxxx.txt, от имени FileName
+            // Т.е. берем FileName, меняем 3-й симовол на C и ищем такой файл
+            string FileToFind = Path.GetFileName(FileName);
+            if (FileToFind.Length != 50) return RootDir; // Какой-то не такой файл
+            if (!Directory.Exists(RootDir)) return RootDir; // Каталога нет
+            
+            FileToFind="SBC"+FileToFind.Substring(3); // Имя файла для поиска
+         
+            // Ищем файлы в каталоге RootDir и подкаталогах
+            string[] files = Directory.GetFiles(RootDir, FileToFind, SearchOption.AllDirectories); // Список всех файлов 
+            if (files.Length > 0) // Берем первый попавшийся
+            {
+                return Path.GetDirectoryName(files[0]);
+            }
+            return RootDir;
+
+        }
+
+        
+
         /// <summary>
         /// Является ли заданное имя переменной (без %%) именем для обработки имен файлов
         /// </summary>
@@ -166,6 +197,10 @@ namespace fnrouter
                 return ReplType.FileName;
             }
             if (var.Equals("ExtFile", StringComparison.CurrentCultureIgnoreCase)) // расширение
+            {
+                return ReplType.FileName;
+            }
+            if (var.Equals("Nalog", StringComparison.CurrentCultureIgnoreCase)) // расширение
             {
                 return ReplType.FileName;
             }

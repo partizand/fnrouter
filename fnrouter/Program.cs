@@ -2,17 +2,32 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Diagnostics;
+//using System.Runtime.InteropServices;
+using System.Threading;
+using System.Reflection;
+
 
 namespace fnrouter
 {
     class Program
     {
-        static string RuleName="test";
+        static string RuleName;//="test";
         static string ConfigFile="fnrouter.ini";
+
         
+        private static bool isNew;
+        private static string guid;
+        private static Mutex _mutex;
+
         static void Main(string[] args)
         {
-            Console.WriteLine("fnrouter v. 0.1.0");
+            // Номер сборки
+            Assembly curAssembly = Assembly.GetExecutingAssembly();
+            Version ver=curAssembly.GetName().Version;
+            ver.ToString();
+            Console.WriteLine("fnrouter v. "+ver.ToString());
+            
             ReadArgs(args);
 
             if (!File.Exists(ConfigFile))
@@ -25,6 +40,25 @@ namespace fnrouter
                 ShowHelp();
                 return;
             }
+
+            using (Process currentProcess = Process.GetCurrentProcess())
+            {
+                guid = string.Format("[{0}][{1}]", currentProcess.ProcessName, RuleName);
+            }
+
+            if (_mutex == null)
+                _mutex = new Mutex(true, guid, out isNew);
+
+            if (!isNew)
+            {
+                Console.WriteLine("Копия программы с таким правилом уже запущена: " + RuleName);
+                return;
+            }
+
+            //Console.WriteLine("Debug: Mutex guid:" + guid);
+
+            Console.WriteLine("Запуск правила " + RuleName+" из файла "+ConfigFile);
+
             GSettings.Param = new MParam("srv", "", "", "25", "sdfsd@sfsdf");
             FRouter router = new FRouter(ConfigFile, RuleName);
             router.DoRule();
