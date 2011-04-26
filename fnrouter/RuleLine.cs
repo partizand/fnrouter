@@ -132,6 +132,9 @@ namespace fnrouter
                 case TAction.RunNoWait:
                     ActRun();
                     break;
+                case TAction.UnRar:
+                    ActUnRar();
+                    break;
 
             }
         }
@@ -149,7 +152,7 @@ namespace fnrouter
             string args = LDecoder.GetValue("Arg");
             args = ReplaceVar.ReplDate(args);
 
-            cmd = GetFullFileName(cmd);
+            //cmd = GetFullFileName(cmd);
 
             if (!File.Exists(cmd))
             {
@@ -184,6 +187,7 @@ namespace fnrouter
             {
                 RarFile=Rule.SFiles[i]; // Имя архива
                 tDest=Path.GetDirectoryName(Rule.DFiles[i]); // Каталог приемник
+                tDest = tDest + Path.DirectorySeparatorChar;
                 args=" e -y \""+RarFile+"\" \""+tDest+"\"";
                 Exec(cmd,args,true);
 
@@ -217,6 +221,18 @@ namespace fnrouter
         /// <param name="WaitForExit"></param>
         void Exec(string Cmd, string Arg, bool WaitForExit)
         {
+            if (!File.Exists(Cmd))
+            {
+                Cmd = GetFullFileName(Cmd);
+                if (!File.Exists(Cmd))
+                {
+                    Log.LogMessage(LogType.Error, "Не найден файл для запуска " + Cmd);
+                    return;
+                }
+            }
+
+
+            
             System.Diagnostics.Process pr = new System.Diagnostics.Process();
 
             pr.StartInfo.FileName = Cmd;
@@ -547,7 +563,7 @@ namespace fnrouter
             string Content="";
             try
             {
-                Content = File.ReadAllText(FileName);
+                Content = File.ReadAllText(FileName,Encoding.GetEncoding(1251));
             }
             catch
             {

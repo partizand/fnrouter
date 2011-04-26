@@ -68,7 +68,8 @@ namespace fnrouter
 
         static void ShowHelp()
         {
-            Console.WriteLine("Using: fnrouter.exe [-cfile:имя_файла_с_правилами] -rule:rule_name");
+            Console.WriteLine("Using: fnrouter.exe [-cfile:имя_файла_с_правилами] -rule:имя_правила");
+            Console.WriteLine("Имя файла с правилами по умолчанию fnrouter.ini");
         }
 
         /// <summary>
