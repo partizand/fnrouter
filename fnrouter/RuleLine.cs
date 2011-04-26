@@ -292,6 +292,7 @@ namespace fnrouter
         void ActSend()
         {
             if (_isEmpty) return;
+            if (Rule.SFiles.Count == 0) return; // Файлов нет
             string MailTo, Subj, Msg,tSubj,tMsg;
             MailTo = LDecoder.GetValue("to");
             if (String.IsNullOrEmpty(MailTo)) return;
@@ -337,6 +338,7 @@ namespace fnrouter
             int tport,port=25;
             //Формирование письма
             MailMessage Message = new MailMessage();
+            Attachment att=null; // Вложение
             Message.From = new MailAddress(LocalParam.MailFrom);
             Message.To.Add(MailTo);
             Message.Subject = Subj;
@@ -347,7 +349,7 @@ namespace fnrouter
             {
                 if (File.Exists(FileName))
                 {
-                    Attachment att = new Attachment(FileName);
+                    att = new Attachment(FileName);
                     Message.Attachments.Add(att);
                 }
             }
@@ -361,6 +363,8 @@ namespace fnrouter
                 SmtpClient Smtp = new SmtpClient(LocalParam.MailSrv, port);
                 if (!String.IsNullOrEmpty(LocalParam.MailPass)) Smtp.Credentials = new NetworkCredential(LocalParam.MailUser, LocalParam.MailPass);
                 Smtp.Send(Message);//отправка
+                if (att != null) att.Dispose(); // Освобждение файла во вложении
+                Message.Dispose(); // Освобождение сообщения
                 return true;
             }
             catch (Exception E)
