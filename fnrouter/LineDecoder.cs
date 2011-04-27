@@ -12,7 +12,7 @@ namespace fnrouter
         /// <summary>
         /// Декодируемая строка
         /// </summary>
-        public string LineStr;
+        string LineStr;
         /// <summary>
         /// Количество ключей в строке
         /// </summary>
@@ -25,11 +25,11 @@ namespace fnrouter
         /// <summary>
         /// Список ключей
         /// </summary>
-        public List<string> Keys;
+        List<string> Keys;
         /// <summary>
         /// Список значений ключей
         /// </summary>
-        public List<string> Values;
+        List<string> Values;
 
         public LineDecoder(string Line)
         {

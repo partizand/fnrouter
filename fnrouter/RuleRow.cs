@@ -4,7 +4,7 @@ using System.Text;
 
 namespace fnrouter
 {
-    public enum TAction { Copy, Move, Send, SendMsg,RunWait,RunNoWait,UnRar };
+    public enum TAction { Copy, Move, Send, SendMsg,RunWait,RunNoWait,UnRar,MoveNalogDir };
 
     class RuleRow
     {
@@ -31,7 +31,7 @@ namespace fnrouter
         /// <summary>
         /// Каталог приемник
         /// </summary>
-        //public string Dest;
+        public string Dest;
         /// <summary>
         /// Список исходных файлов вместе с путями
         /// </summary>

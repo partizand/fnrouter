@@ -98,6 +98,9 @@ namespace fnrouter
                 case "UNRAR":
                     Rule.Action = TAction.UnRar;
                     break;
+                case "MOVENALOGDIR":
+                    Rule.Action = TAction.MoveNalogDir;
+                    break;
                 default:
                     SetVoid();
                     return;
@@ -134,6 +137,9 @@ namespace fnrouter
                     break;
                 case TAction.UnRar:
                     ActUnRar();
+                    break;
+                case TAction.MoveNalogDir:
+                    ActMoveNalogDir();
                     break;
 
             }
@@ -177,10 +183,12 @@ namespace fnrouter
             
         }
 
-
+        /// <summary>
+        /// Распаковка UnRar
+        /// </summary>
         void ActUnRar()
         {
-            string cmd = GetFullFileName("rar.exe");
+            string cmd = "rar.exe";
             int i;
             string RarFile,tDest,args;
             for (i=0;i<Rule.SFiles.Count;i++) // Перебираем исходные файлы
@@ -192,10 +200,64 @@ namespace fnrouter
                 Exec(cmd,args,true);
 
             }
-            
-
-            
         }
+
+        void ActMoveNalogDir()
+        {
+            string DirTo,ShortDir;
+            // В исходном каталоге ищем подкаталоги по заданной маске и содержащие полный комплект ответов
+            string[] FDirs = Directory.GetDirectories(Rule.SourceDir, Rule.SourceMask); // Каталоги для поиска полных комплектов
+            foreach (string FDir in FDirs)
+            {
+                if (IsNalogDirFin(FDir)) // Каталог завершен, его нужно переместить в Dest
+                {
+                    ShortDir=Path.GetFileName(FDir); // Возможно неправильно! нужно имя каталога на конце строки
+                    if (ShortDir.StartsWith("!")) ShortDir=ShortDir.Substring(1); // Убираем "!"
+                    DirTo=Path.Combine(Rule.Dest,ShortDir);
+                    // Создание каталога приемника если нужно
+                    DirectoryCreateEx(Rule.Dest, Log);
+                    DirMoveEx(FDir, DirTo, Log);
+                }
+            }
+        }
+        /// <summary>
+        /// Возвращает true если каталог Dir содержит полный комплект ответов из налоговой
+        /// </summary>
+        /// <param name="Dir"></param>
+        /// <returns></returns>
+        bool IsNalogDirFin(string Dir)
+        {
+            string[] SendFiles;
+            bool IsAnsw;
+            SendFiles = Directory.GetFiles(Dir, "sbc*.txt"); // Файлы отправляемые в налоговую
+            if (SendFiles.Length < 1) return false; // Отправляемых файлов нет
+            // К кажому sbc файлу должен быть sbf,sbp и sbr файл
+            foreach (string SFile in SendFiles)
+            {
+                IsAnsw = IsNalogAnswerExists(SFile, "SBF");
+                if (!IsAnsw) return false;
+                IsAnsw = IsNalogAnswerExists(SFile, "SBP");
+                if (!IsAnsw) return false;
+                IsAnsw = IsNalogAnswerExists(SFile, "SBR");
+                if (!IsAnsw) return false;
+            }
+            return true;
+        }
+        /// <summary>
+        /// Возвращает существует ли ответ из налоговой на файл SourceFile с префиксом Prefix в том же каталоге
+        /// </summary>
+        /// <param name="SourceFile">Полный путь к файлу SBC</param>
+        /// <param name="Prefix">Префикс ответа SBF,SBP,SBR</param>
+        /// <returns></returns>
+        bool IsNalogAnswerExists(string SourceFile, string Prefix)
+        {
+            string Dir=Path.GetDirectoryName(SourceFile);
+            string shortFindFile = Path.GetFileName(SourceFile);
+            string FindFile = Prefix + shortFindFile.Substring(3);
+            FindFile = Path.Combine(Dir, FindFile);
+            return File.Exists(FindFile);
+        }
+
         /// <summary>
         /// Возвращает полное имя файла из короткого добавлением каталога программы или возращает неизменным если путь и так полный
         /// </summary>
@@ -443,6 +505,27 @@ namespace fnrouter
 
         }
         /// <summary>
+        /// Перемещение каталога с отловом исключения и записью в лог, если ошибка. Log может быть null, тогда лога нет
+        /// </summary>
+        /// <param name="FileNameFrom"></param>
+        /// <param name="FileNameTo"></param>
+        /// <param name="Log"></param>
+        /// <returns></returns>
+        public static bool DirMoveEx(string DirNameFrom, string DirNameTo, Logging Log)
+        {
+            try
+            {
+                Directory.Move(DirNameFrom, DirNameTo);
+                return true;
+            }
+            catch (Exception E)
+            {
+                if (Log != null) Log.LogMessage(LogType.Error, "Ошибка перемещения каталога " + DirNameFrom + " в " + DirNameTo + ". " + E.Message);
+                return false;
+            }
+
+        }
+        /// <summary>
         /// Удаление файла с отловом исключения и записью в лог, если ошибка. Log может быть null, тогда лога нет
         /// </summary>
         /// <param name="FileName"></param>
@@ -490,6 +573,7 @@ namespace fnrouter
         /// </summary>
         void FillSFiles()
         {
+            
             Rule.Source = LDecoder.GetValue("S");
             Rule.Source = ReplaceVar.ReplDate(Rule.Source); // Подстановка текущих даты времени
             Rule.Contain = LDecoder.GetValue("CONTAIN");
@@ -497,6 +581,9 @@ namespace fnrouter
             Rule.SourceDir = Path.GetDirectoryName(Rule.Source);
             if (!Directory.Exists(Rule.SourceDir)) return;
             Rule.SourceMask = Path.GetFileName(Rule.Source);
+
+            if (Rule.Action == TAction.MoveNalogDir) return; // Перемещение каталога налоговой, файлов нет
+
             DirectoryInfo di = new DirectoryInfo(Rule.SourceDir);
             FileInfo[] Files = di.GetFiles(Rule.SourceMask);
             
@@ -515,16 +602,17 @@ namespace fnrouter
         /// </summary>
         void FillDFiles()
         {
-            string Dest,tDest;
+            string tDest;
 
-            Dest = LDecoder.GetValue("D");
-            Dest = ReplaceVar.ReplDate(Dest); // Замена даты
-            if (String.IsNullOrEmpty(Dest)) return; // не указан приемник
+            Rule.Dest = LDecoder.GetValue("D");
+            Rule.Dest = ReplaceVar.ReplDate(Rule.Dest); // Замена даты
+            if (String.IsNullOrEmpty(Rule.Dest)) return; // не указан приемник
+            if (Rule.Action == TAction.MoveNalogDir) return; // Перемещение каталога налоговой, файлов нет
             string shortFileName;
             foreach (string FullSFile in Rule.SFiles) // перебираем все исходные файлы
             {
                 shortFileName = GetRenFileName(FullSFile); // Переименование если нужно
-                tDest = ReplaceVar.ReplFile(Dest, FullSFile,Rule.SFiles); // Замена %file% в имени каталога приемника
+                tDest = ReplaceVar.ReplFile(Rule.Dest, FullSFile, Rule.SFiles); // Замена %file% в имени каталога приемника
                 Rule.DFiles.Add(Path.Combine(tDest,shortFileName));
             }
 
