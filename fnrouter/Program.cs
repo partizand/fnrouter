@@ -12,7 +12,7 @@ namespace fnrouter
 {
     class Program
     {
-        static string RuleName="test";
+        static string RuleName;//="test";
         static string ConfigFile="fnrouter.ini";
 
         
