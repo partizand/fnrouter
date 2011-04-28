@@ -216,7 +216,10 @@ namespace fnrouter
                     DirTo=Path.Combine(Rule.Dest,ShortDir);
                     // Создание каталога приемника если нужно
                     DirectoryCreateEx(Rule.Dest, Log);
-                    DirMoveEx(FDir, DirTo, Log);
+                    if (DirMoveEx(FDir, DirTo, Log))
+                    {
+                        Log.LogMessage(LogType.Info, "Перемещен каталог " + FDir + " в " + DirTo);
+                    }
                 }
             }
         }
@@ -492,9 +495,11 @@ namespace fnrouter
         /// <returns></returns>
         public static bool FileMoveEx(string FileNameFrom, string FileNameTo, Logging Log)
         {
+            string NewFileNameTo = FileNameTo;
             try
             {
-                File.Move(FileNameFrom, FileNameTo);
+                NewFileNameTo = UniqFileName(FileNameTo);
+                File.Move(FileNameFrom, NewFileNameTo);
                 return true;
             }
             catch (Exception E)
@@ -504,6 +509,43 @@ namespace fnrouter
             }
 
         }
+
+        //------------------------------------------------------------------------------
+        /// <summary>
+        /// Получение не существующего имени файла для каталога
+        /// </summary>
+        /// <param name="FileName">Путь и имя файла</param>
+        /// <returns>Имя файла, которое не занято</returns>
+
+        public static string UniqFileName(string FileName)
+        {
+            string UFileName = FileName;
+            string Ext = Path.GetExtension(FileName); // Расширение файла
+            if (String.IsNullOrEmpty(Ext))// Расширения нет
+            {
+                while (File.Exists(UFileName))
+                {
+                    UFileName += ".1";
+                }
+                return UFileName;
+            }
+            else // Расширение есть
+            {
+                string FNameWithoutExt = Path.GetFileNameWithoutExtension(FileName);
+                string FileDir = Path.GetDirectoryName(FileName);
+                // Получение уникального имени для файла в каталоге
+
+                while (File.Exists(UFileName))
+                {
+                    FNameWithoutExt += ".1";
+                    UFileName = Path.Combine(FileDir, FNameWithoutExt + Ext);
+                    //UFileName += ".1";
+                }
+                return UFileName;
+            }
+
+        }
+
         /// <summary>
         /// Перемещение каталога с отловом исключения и записью в лог, если ошибка. Log может быть null, тогда лога нет
         /// </summary>
