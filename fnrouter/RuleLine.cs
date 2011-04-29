@@ -311,7 +311,7 @@ namespace fnrouter
                 return;
 
             }
-            if (Rule.Action == TAction.RunWait)
+            if (WaitForExit)
             {
                 pr.WaitForExit(); // Ждем завершения до бесконечности
                 pr.Dispose();
