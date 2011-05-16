@@ -675,7 +675,10 @@ namespace fnrouter
                 int len;
                 Ext = Path.GetExtension(FileName);
                 onlyName = Path.GetFileNameWithoutExtension(FileName);
-                Ext = Ext.Substring(0, 4); 
+                if (Ext.Length > 4) // Обрезаем расширение, если оно длиннее 3 символов
+                {
+                    Ext = Ext.Substring(0, 4);
+                }
                 len=onlyName.Length;
                 if (len>8)
                 {
