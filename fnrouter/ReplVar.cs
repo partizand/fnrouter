@@ -160,7 +160,16 @@ namespace fnrouter
                 if (var.Equals("Nalog", StringComparison.CurrentCultureIgnoreCase)) // Налоговая, должна быть последняя в строке!
                 {
                     str = str.Replace("%" + var + "%", ""); // Убираем %nalog% из пути
-                    str = GetNalogDir(str, FileName); // Получаем каталог, где лежит файл налоговой
+                    sValue = Path.GetExtension(FileName); // Расширение файла
+                    if (sValue.Equals("txt", StringComparison.CurrentCultureIgnoreCase)) // Это налоговая
+                    {
+                        str = GetNalogDir(str, FileName); // Получаем каталог, где лежит файл налоговой
+                    }
+                    if (sValue.Equals("xml", StringComparison.CurrentCultureIgnoreCase)) // Это ФТС
+                    {
+                        str = GetFTSDir(str, FileName); // Получаем каталог, где лежит файл налоговой
+                    }
+                    
                 }
                 if (var.Equals("FTS", StringComparison.CurrentCultureIgnoreCase)) // ФТС, должна быть последняя в строке!
                 {

@@ -127,6 +127,9 @@ namespace fnrouter
                 case "MOVENALOGDIR":
                     Rule.Action = TAction.MoveNalogDir;
                     break;
+                case "MOVEFTSDIR":
+                    Rule.Action = TAction.MoveFTSDir;
+                    break;
                 default:
                     SetVoid();
                     return;
@@ -165,6 +168,9 @@ namespace fnrouter
                     ActUnRar();
                     break;
                 case TAction.MoveNalogDir:
+                    ActMoveNalogDir();
+                    break;
+                case TAction.MoveFTSDir:
                     ActMoveNalogDir();
                     break;
 
@@ -235,11 +241,12 @@ namespace fnrouter
             string[] FDirs = Directory.GetDirectories(Rule.SourceDir, Rule.SourceMask); // Каталоги для поиска полных комплектов
             foreach (string FDir in FDirs)
             {
-                if (IsNalogDirFin(FDir)) // Каталог завершен, его нужно переместить в Dest
+                if (IsDirFin(FDir)) // Каталог завершен, его нужно переместить в Dest
                 {
-                    ShortDir=Path.GetFileName(FDir); // Возможно неправильно! нужно имя каталога на конце строки
-                    if (ShortDir.StartsWith("!")) ShortDir=ShortDir.Substring(1); // Убираем "!"
-                    DirTo=Path.Combine(Rule.Dest,ShortDir);
+
+                    ShortDir = Path.GetFileName(FDir); // Возможно неправильно! нужно имя каталога на конце строки
+                    if (ShortDir.StartsWith("!")) ShortDir = ShortDir.Substring(1); // Убираем "!"
+                    DirTo = Path.Combine(Rule.Dest, ShortDir);
                     // Создание каталога приемника если нужно
                     DirectoryCreateEx(Rule.Dest, Log);
                     if (DirMoveEx(FDir, DirTo, Log))
@@ -249,6 +256,27 @@ namespace fnrouter
                 }
             }
         }
+        
+        /// <summary>
+        /// Возвращает true если каталог Dir содержит полный комплект ответов из налоговой или ФТС
+        /// </summary>
+        /// <param name="Dir"></param>
+        /// <returns></returns>
+        bool IsDirFin(string Dir)
+        {
+            switch (Rule.Action)
+            {
+                case TAction.MoveNalogDir:
+                    return IsNalogDirFin(Dir);
+                    
+                case TAction.MoveFTSDir:
+                    return IsFTSDirFin(Dir);
+                    
+            }
+            return false;
+
+        }
+
         /// <summary>
         /// Возвращает true если каталог Dir содержит полный комплект ответов из налоговой
         /// </summary>
@@ -282,9 +310,29 @@ namespace fnrouter
         {
             string Dir=Path.GetDirectoryName(SourceFile);
             string shortFindFile = Path.GetFileName(SourceFile);
-            string FindFile = Prefix + shortFindFile.Substring(3);
+            string FindFile = Prefix + shortFindFile.Substring(Prefix.Length);
             FindFile = Path.Combine(Dir, FindFile);
             return File.Exists(FindFile);
+        }
+        /// <summary>
+        /// Возвращает true если каталог Dir содержит полный комплект ответов из ФТС
+        /// </summary>
+        /// <param name="Dir"></param>
+        /// <returns></returns>
+        bool IsFTSDirFin(string Dir)
+        {
+            string[] SendFiles;
+            bool IsAnsw;
+            SendFiles = Directory.GetFiles(Dir, "ps*.xml"); // Файлы отправляемые в ФТС
+            if (SendFiles.Length < 1) return false; // Отправляемых файлов нет
+            // К кажому ps файлу должен быть fs файл
+            foreach (string SFile in SendFiles)
+            {
+                IsAnsw = IsNalogAnswerExists(SFile, "F");
+                if (!IsAnsw) return false;
+                
+            }
+            return true;
         }
 
         /// <summary>
