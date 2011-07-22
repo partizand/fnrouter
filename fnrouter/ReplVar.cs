@@ -162,6 +162,11 @@ namespace fnrouter
                     str = str.Replace("%" + var + "%", ""); // Убираем %nalog% из пути
                     str = GetNalogDir(str, FileName); // Получаем каталог, где лежит файл налоговой
                 }
+                if (var.Equals("FTS", StringComparison.CurrentCultureIgnoreCase)) // ФТС, должна быть последняя в строке!
+                {
+                    str = str.Replace("%" + var + "%", ""); // Убираем %fts% из пути
+                    str = GetFTSDir(str, FileName); // Получаем каталог, где лежит файл ФТС
+                }
                 var = GetStrVar(str,ReplType.FileName);
             }
             return str;
@@ -182,6 +187,29 @@ namespace fnrouter
             
             FileToFind="SBC"+FileToFind.Substring(3); // Имя файла для поиска
          
+            // Ищем файлы в каталоге RootDir и подкаталогах
+            string[] files = Directory.GetFiles(RootDir, FileToFind, SearchOption.AllDirectories); // Список всех файлов 
+            if (files.Length > 0) // Берем первый попавшийся
+            {
+                return Path.GetDirectoryName(files[0]);
+            }
+            return RootDir;
+
+        }
+        /// <summary>
+        /// Поиск каталога содержащего файл ФТС, по имени ответного файла из ФТС
+        /// </summary>
+        /// <param name="FileName"></param>
+        /// <returns></returns>
+        static string GetFTSDir(string RootDir, string FileName)
+        {
+            
+            string FileToFind = Path.GetFileName(FileName);
+            if (!FileToFind.EndsWith(".xml",StringComparison.CurrentCultureIgnoreCase)) return RootDir; // Какой-то не такой файл
+            if (!Directory.Exists(RootDir)) return RootDir; // Каталога нет
+
+            FileToFind = "P" + FileToFind.Substring(1); // Имя файла для поиска
+
             // Ищем файлы в каталоге RootDir и подкаталогах
             string[] files = Directory.GetFiles(RootDir, FileToFind, SearchOption.AllDirectories); // Список всех файлов 
             if (files.Length > 0) // Берем первый попавшийся
