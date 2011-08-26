@@ -114,14 +114,14 @@ namespace fnrouter
                 if (!String.IsNullOrEmpty(sValue))
                     this.MailPort = sValue;
             }
-            sValue = LDecoder.GetValue("MailUser");
+            sValue = LDecoder.GetValue("MAILUSER");
             if (ReadEmpty) this.MailUser = sValue;
             else
             {
                 if (!String.IsNullOrEmpty(sValue))
                     this.MailUser = sValue;
             }
-            sValue = LDecoder.GetValue("MailPass");
+            sValue = LDecoder.GetValue("MAILPASS");
             if (ReadEmpty) this.MailPass = sValue;
             else
             {
@@ -138,6 +138,7 @@ namespace fnrouter
         {
             if (String.IsNullOrEmpty(MailSrv)) MailSrv = GlobalParam.MailSrv;
             if (String.IsNullOrEmpty(MailUser)) MailUser = GlobalParam.MailUser;
+            if (String.IsNullOrEmpty(MailPass)) MailPass = GlobalParam.MailPass;
             if (String.IsNullOrEmpty(MailPort)) MailPort = GlobalParam.MailPort;
             if (String.IsNullOrEmpty(MailFrom)) MailFrom = GlobalParam.MailFrom;
         }
