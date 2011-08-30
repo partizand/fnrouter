@@ -515,8 +515,16 @@ namespace fnrouter
             catch (SmtpException ESmtp)
             {
                 //if (att != null) att.Dispose(); // Освобждение файла во вложении
-                Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. StatusCode=" + ESmtp.StatusCode.ToString()+". " + ESmtp.Message);
-                
+                switch (ESmtp.StatusCode)
+                {
+                    case SmtpStatusCode.GeneralFailure:
+                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. Сервер недоступен " + LocalParam.MailSrv + ". " + ESmtp.Message);
+                        break;
+                    default:
+                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. StatusCode=" + ESmtp.StatusCode.ToString() + ". Smtp host=" + LocalParam.MailSrv +". "+ ESmtp.Message);
+                        break;
+                }
+
                 ret = false;
             }
 

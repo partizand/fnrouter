@@ -1,0 +1,5 @@
+/fnrouter/bin
+/fnrouter/obj
+/fnrouter/Properties
+*.suo
+*.sln
