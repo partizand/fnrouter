@@ -475,6 +475,7 @@ namespace fnrouter
         bool SendMail(string MailTo, string Subj, string Msg, string FileName)
         {
             int tport,port=25;
+            bool ret;
             //Формирование письма
             MailMessage Message = new MailMessage();
             Attachment att=null; // Вложение
@@ -502,15 +503,36 @@ namespace fnrouter
                 SmtpClient Smtp = new SmtpClient(LocalParam.MailSrv, port);
                 if (!String.IsNullOrEmpty(LocalParam.MailPass)) Smtp.Credentials = new NetworkCredential(LocalParam.MailUser, LocalParam.MailPass);
                 Smtp.Send(Message);//отправка
-                if (att != null) att.Dispose(); // Освобждение файла во вложении
-                Message.Dispose(); // Освобождение сообщения
-                return true;
+                
+                ret=true;
             }
+            catch (SmtpFailedRecipientsException ESmtp)
+            {
+                //if (att != null) att.Dispose(); // Освобждение файла во вложении
+                Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpFailedRecipientsException. " + ESmtp.Message);
+                ret = false;
+            }
+            catch (SmtpException ESmtp)
+            {
+                //if (att != null) att.Dispose(); // Освобждение файла во вложении
+                Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. StatusCode=" + ESmtp.StatusCode.ToString()+". " + ESmtp.Message);
+                
+                ret = false;
+            }
+
             catch (Exception E)
             {
+                //if (att != null) att.Dispose(); // Освобждение файла во вложении
                 Log.LogMessage(LogType.Error, "Ошибка отправки на почту. " + E.Message);
-                return false;
+                ret = false;
             }
+            finally
+            {
+                if (att != null) att.Dispose(); // Освобждение файла во вложении
+                Message.Dispose(); // Освобождение сообщения
+                
+            }
+            return ret;
         }
         
         
