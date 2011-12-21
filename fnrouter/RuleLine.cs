@@ -124,6 +124,9 @@ namespace fnrouter
                 case "UNRAR":
                     Rule.Action = TAction.UnRar;
                     break;
+                case "UNARJ":
+                    Rule.Action = TAction.UnArj;
+                    break;
                 case "MOVENALOGDIR":
                     Rule.Action = TAction.MoveNalogDir;
                     break;
@@ -166,6 +169,9 @@ namespace fnrouter
                     break;
                 case TAction.UnRar:
                     ActUnRar();
+                    break;
+                case TAction.UnArj:
+                    ActUnArj();
                     break;
                 case TAction.MoveNalogDir:
                     ActMoveNalogDir();
@@ -230,6 +236,26 @@ namespace fnrouter
                 tDest = tDest + Path.DirectorySeparatorChar;
                 args=" e -y \""+RarFile+"\" \""+tDest+"\"";
                 Exec(cmd,args,true);
+
+            }
+        }
+
+        /// <summary>
+        /// Распаковка UnArj
+        /// </summary>
+        void ActUnArj()
+        {
+            string cmd = "arj32.exe";
+            int i;
+            string ArjFile, tDest, args;
+            for (i = 0; i < Rule.SFiles.Count; i++) // Перебираем исходные файлы
+            {
+                ArjFile = Rule.SFiles[i]; // Имя архива
+                tDest = Path.GetDirectoryName(Rule.DFiles[i]); // Каталог приемник
+                tDest = tDest + Path.DirectorySeparatorChar;
+                DirectoryCreateEx(tDest, Log);
+                args = "e -y " + ArjFile + " " + tDest; // arj не понимает кавычки
+                Exec(cmd, args, true);
 
             }
         }
@@ -353,6 +379,33 @@ namespace fnrouter
             return FullName;
         }
         /// <summary>
+        /// Expands environment variables and, if unqualified, locates the exe in the working directory
+        /// or the evironment's path.
+        /// </summary>
+        /// <param name="exe">The name of the executable file</param>
+        /// <returns>The fully-qualified path to the file</returns>
+        /// <exception cref="System.IO.FileNotFoundException">Raised when the exe was not found</exception>
+        string FindExePath(string exe)
+        {
+            exe = Environment.ExpandEnvironmentVariables(exe);
+            if (!File.Exists(exe))
+            {
+                if (Path.GetDirectoryName(exe) == String.Empty) // Поиск в Path
+                {
+                    foreach (string test in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
+                    {
+                        string path = test.Trim();
+                        if (!String.IsNullOrEmpty(path) && File.Exists(path = Path.Combine(path, exe)))
+                            return Path.GetFullPath(path);
+                    }
+                }
+                // Поиск в текущем каталоге с программой
+                string fullPath = GetFullFileName(exe);
+                return fullPath;
+            }
+            return Path.GetFullPath(exe);
+        }
+        /// <summary>
         /// Запуск внешнего файла
         /// </summary>
         /// <param name="Cmd"></param>
@@ -360,28 +413,25 @@ namespace fnrouter
         /// <param name="WaitForExit"></param>
         void Exec(string Cmd, string Arg, bool WaitForExit)
         {
-            if (!File.Exists(Cmd))
+            
+            // Ищем файл в path
+            string FullCmd = FindExePath(Cmd);
+            if (!File.Exists(FullCmd))
             {
-                Cmd = GetFullFileName(Cmd);
-                if (!File.Exists(Cmd))
-                {
-                    Log.LogMessage(LogType.Error, "Не найден файл для запуска " + Cmd);
-                    return;
-                }
+               Log.LogMessage(LogType.Error, "Не найден файл для запуска " + Cmd);
+               return;
             }
 
-
-            
             System.Diagnostics.Process pr = new System.Diagnostics.Process();
 
-            pr.StartInfo.FileName = Cmd;
+            pr.StartInfo.FileName = FullCmd;
             pr.StartInfo.Arguments = Arg;
 
-            Log.LogMessage(LogType.Error, "Запуск " + Cmd + " " + Arg);
+            Log.LogMessage(LogType.Error, "Запуск " + FullCmd + " " + Arg);
 
             if (!pr.Start())  // Ошибка запуска
             {
-                Log.LogMessage(LogType.Error, "Ошибка запуска " + Cmd + " " + pr.StartInfo.Arguments);
+                Log.LogMessage(LogType.Error, "Ошибка запуска " + FullCmd + " " + pr.StartInfo.Arguments);
                 return;
 
             }
