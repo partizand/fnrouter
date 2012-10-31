@@ -539,7 +539,7 @@ namespace fnrouter
                 }
                 else
                 {
-                    Log.LogMessage(LogType.Error, "Возникло исключение при формировани квитока PB1 для " + sfile + " в каталог " + Rule.Dest);
+                    Log.LogMessage(LogType.Error, "Возникло исключение при формировании квитка PB1 для " + sfile + " в каталог " + Rule.Dest);
                 }
             }
 
@@ -553,8 +553,9 @@ namespace fnrouter
         /// <param name="fileName"></param>
         /// <param name="outFolder"></param>
         /// <returns></returns>
-        static bool KvitGen(string fileName, string outFolder)
+        bool KvitGen(string fileName, string outFolder)
         {
+            DirectoryCreateEx(outFolder, Log);
             string newFileName = "PB1_" + Path.GetFileNameWithoutExtension(fileName) + ".txt";
             newFileName = Path.Combine(outFolder, newFileName);
             try
