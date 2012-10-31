@@ -30,7 +30,7 @@ using System.Text;
 
 namespace fnrouter
 {
-    public enum TAction { Copy, Move, Send, SendMsg,RunWait,RunNoWait,UnRar,MoveNalogDir,MoveFTSDir,UnArj };
+    public enum TAction { Copy, Move, Send, SendMsg,RunWait,RunNoWait,UnRar,MoveNalogDir,MoveFTSDir,UnArj,PbGen };
 
     class RuleRow
     {

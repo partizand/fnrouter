@@ -133,6 +133,9 @@ namespace fnrouter
                 case "MOVEFTSDIR":
                     Rule.Action = TAction.MoveFTSDir;
                     break;
+                case "PBGEN":
+                    Rule.Action = TAction.PbGen;
+                    break;
                 default:
                     SetVoid();
                     return;
@@ -178,6 +181,9 @@ namespace fnrouter
                     break;
                 case TAction.MoveFTSDir:
                     ActMoveNalogDir();
+                    break;
+                case TAction.PbGen:
+                    ActPbGen();
                     break;
 
             }
@@ -510,8 +516,64 @@ namespace fnrouter
             }
 
         }
-        
 
+        /// <summary>
+        /// Генерация квитков PB1 на файлы R* налоговой 
+        /// </summary>
+        /// <param name="inFolder"></param>
+        /// <param name="outFolder"></param>
+        /// <returns></returns>
+        void ActPbGen()
+        {
+            if (_isEmpty) return;
+            if (Rule.SFiles.Count == 0) return; // Файлов нет
+
+            bool res;
+
+            foreach (string sfile in Rule.SFiles)
+            {
+                res = KvitGen(sfile, Rule.Dest);
+                if (res)
+                {
+                    Log.LogMessage(LogType.Info, "Сформирован квиток PB1 для " + sfile + " в каталог " + Rule.Dest);
+                }
+                else
+                {
+                    Log.LogMessage(LogType.Error, "Возникло исключение при формировани квитока PB1 для " + sfile + " в каталог " + Rule.Dest);
+                }
+            }
+
+
+                
+        }
+
+        /// <summary>
+        /// Генерация квитка PB1 на файл fileName в каталог outFolder
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="outFolder"></param>
+        /// <returns></returns>
+        static bool KvitGen(string fileName, string outFolder)
+        {
+            string newFileName = "PB1_" + Path.GetFileNameWithoutExtension(fileName) + ".txt";
+            newFileName = Path.Combine(outFolder, newFileName);
+            try
+            {
+                StreamWriter sw = File.CreateText(newFileName);
+                sw.WriteLine(Path.GetFileNameWithoutExtension(fileName) + "###");
+                sw.WriteLine("10@@@");
+                DateTime.Today.ToString("YYYY-mm-dd");
+                sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd") + "@@@");
+                sw.WriteLine(DateTime.Now.ToString("HH:mm:ss") + "@@@");
+                sw.WriteLine("===");
+                sw.Close();
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
         
 
         /// <summary>
