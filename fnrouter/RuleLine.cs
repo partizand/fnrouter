@@ -136,6 +136,9 @@ namespace fnrouter
                 case "PBGEN":
                     Rule.Action = TAction.PbGen;
                     break;
+                case "MERGENALOGFILE":
+                    Rule.Action = TAction.MergeNalogFile;
+                    break;
                 default:
                     SetVoid();
                     return;
@@ -184,6 +187,9 @@ namespace fnrouter
                     break;
                 case TAction.PbGen:
                     ActPbGen();
+                    break;
+                case TAction.MergeNalogFile:
+                    ActMergeNalogFile();
                     break;
 
             }
@@ -244,6 +250,48 @@ namespace fnrouter
                 Exec(cmd,args,true);
 
             }
+        }
+
+        /// <summary>
+        /// Объединение файлов налоговой в один с убиранием подписи для распечатки
+        /// </summary>
+        void ActMergeNalogFile()
+        {
+            if (_isEmpty) return;
+            if (Rule.SFiles.Count == 0) return; // Файлов нет
+
+            string line;
+            string pages = LDecoder.GetValue("pages"); // Разбивать на страницы (если pages=yes)
+            bool split = false;
+            if (pages.ToLower() == "yes") split = true;
+            FileStream fs = FileCreateEx(Rule.Dest, Log);
+            StreamWriter sw = new StreamWriter(fs, Encoding.GetEncoding(866));
+            foreach (string sfile in Rule.SFiles)
+            {
+                // Читаем файл построчно до строки "==="
+                StreamReader sr = new StreamReader(sfile, Encoding.GetEncoding(866));
+
+                while (!sr.EndOfStream)
+                {
+                    line=sr.ReadLine();
+                    sw.WriteLine(line);
+                    if (line == "===")
+                    {
+                        if (split)
+                        {
+                            sw.WriteLine("\f");
+                        }
+                        break;
+                    }
+                }
+
+                sr.Close();
+
+            }
+            sw.Close();
+            fs.Close();
+
+
         }
 
         /// <summary>
@@ -680,6 +728,24 @@ namespace fnrouter
             }
 
         }
+        //-------------------------------------------------------------------------------------------------
+        static FileStream FileCreateEx(string FileName, Logging Log)
+        {
+            string Dir = Path.GetDirectoryName(FileName);
+            DirectoryCreateEx(Dir, Log);
+            try
+            {
+                FileStream fs=File.Create(FileName);
+                return fs;
+            }
+            catch (Exception E)
+            {
+
+                if (Log != null) Log.LogMessage(LogType.Error, "Ошибка создания файла " + FileName + ". " + E.Message);
+                return null;
+            }
+        }
+
         //-------------------------------------------------------------------------------------------------
         /// <summary>
         /// Копирование файла с отловом исключения и записью в лог, если ошибка. Log может быть null, тогда лога нет
