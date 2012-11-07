@@ -263,29 +263,33 @@ namespace fnrouter
             string line;
             string pages = LDecoder.GetValue("pages"); // Разбивать на страницы (если pages=yes)
             bool split = false;
+            bool splitnext=false;
             if (pages.ToLower() == "yes") split = true;
             FileStream fs = FileCreateEx(Rule.Dest, Log);
             StreamWriter sw = new StreamWriter(fs, Encoding.GetEncoding(866));
-            foreach (string sfile in Rule.SFiles)
+            foreach (string sfile in Rule.SFiles) // Перебор всех файлов
             {
+                if (split && splitnext) // Вставка разрыва страницы
+                {
+                    sw.WriteLine("\f");
+                } 
                 // Читаем файл построчно до строки "==="
                 StreamReader sr = new StreamReader(sfile, Encoding.GetEncoding(866));
-
-                while (!sr.EndOfStream)
+                while (!sr.EndOfStream) // Перебор всех строк в файле
                 {
+                    
                     line=sr.ReadLine();
                     sw.WriteLine(line);
                     if (line == "===")
                     {
-                        if (split)
-                        {
-                            sw.WriteLine("\f");
-                        }
+                        
                         break;
                     }
+                    
                 }
 
                 sr.Close();
+                if (!splitnext) splitnext = true;
 
             }
             sw.Close();
