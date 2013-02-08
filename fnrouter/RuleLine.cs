@@ -321,8 +321,11 @@ namespace fnrouter
         void ActMoveNalogDir()
         {
             string DirTo,ShortDir;
+            string SourceDir, SourceMask;
+            SourceDir = Path.GetDirectoryName(Rule.Source);
+            SourceMask = Path.GetFileName(Rule.Source);
             // В исходном каталоге ищем подкаталоги по заданной маске и содержащие полный комплект ответов
-            string[] FDirs = Directory.GetDirectories(Rule.SourceDir, Rule.SourceMask); // Каталоги для поиска полных комплектов
+            string[] FDirs = Directory.GetDirectories(SourceDir, SourceMask); // Каталоги для поиска полных комплектов
             foreach (string FDir in FDirs)
             {
                 if (IsDirFin(FDir)) // Каталог завершен, его нужно переместить в Dest
@@ -907,23 +910,18 @@ namespace fnrouter
             Rule.Source = ReplaceVar.ReplDate(Rule.Source); // Подстановка текущих даты времени
             Rule.Contain = LDecoder.GetValue("CONTAIN");
             if (String.IsNullOrEmpty(Rule.Source)) return;
-            Rule.SourceDir = Path.GetDirectoryName(Rule.Source);
-            if (!Directory.Exists(Rule.SourceDir)) return;
-            Rule.SourceMask = Path.GetFileName(Rule.Source);
-
             if (Rule.Action == TAction.MoveNalogDir) return; // Перемещение каталога налоговой, файлов нет
 
-            DirectoryInfo di = new DirectoryInfo(Rule.SourceDir);
-            FileInfo[] Files = di.GetFiles(Rule.SourceMask);
+            //Rule.SourceDir = Path.GetDirectoryName(Rule.Source);
+            //if (!Directory.Exists(Rule.SourceDir)) return;
+            //Rule.SourceMask = Path.GetFileName(Rule.Source);
+
             
-            foreach (FileInfo fi in Files) // Проходим по всем файлам, выбираем те которые содержат строку contain
-                {
-                    if (IsContain(fi.FullName, Rule.Contain))
-                    {
-                        Rule.SFiles.Add(fi.FullName);
-                    }
-                }
-            
+            string Exclude = LDecoder.GetValue("EXCLUDE"); // Исключаемые маски
+            string Include = LDecoder.GetValue("INC"); // Включаемые маски
+
+            DirInfo di = new DirInfo(Rule.Source, Include, Exclude, Rule.Contain);
+            Rule.SFiles = di.GetFiles();
             
         }
         /// <summary>

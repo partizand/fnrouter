@@ -38,6 +38,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DirInfo.cs" />
     <Compile Include="gsettings.cs" />
     <Compile Include="LineDecoder.cs" />
     <Compile Include="logging.cs" />

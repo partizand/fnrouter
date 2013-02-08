@@ -45,11 +45,11 @@ namespace fnrouter
         /// <summary>
         /// Каталог источника, без маски
         /// </summary>
-        public string SourceDir;
+        //public string SourceDir;
         /// <summary>
         /// Маска файлов источника
         /// </summary>
-        public string SourceMask;
+        //public string SourceMask;
         /// <summary>
         /// Исходный файл должен содержать строку
         /// </summary>
