@@ -127,6 +127,9 @@ namespace fnrouter
                 case "UNARJ":
                     Rule.Action = TAction.UnArj;
                     break;
+                case "UNCAB":
+                    Rule.Action = TAction.UnCab;
+                    break;
                 case "MOVENALOGDIR":
                     Rule.Action = TAction.MoveNalogDir;
                     break;
@@ -178,6 +181,9 @@ namespace fnrouter
                     break;
                 case TAction.UnArj:
                     ActUnArj();
+                    break;
+                case TAction.UnCab:
+                    ActUnCab();
                     break;
                 case TAction.MoveNalogDir:
                     ActMoveNalogDir();
@@ -313,6 +319,26 @@ namespace fnrouter
                 tDest = tDest + Path.DirectorySeparatorChar;
                 DirectoryCreateEx(tDest, Log);
                 args = "e -y " + ArjFile + " " + tDest; // arj не понимает кавычки
+                Exec(cmd, args, true);
+
+            }
+        }
+        /// <summary>
+        /// Распаковка UnCab
+        /// </summary>
+        void ActUnCab()
+        {
+            string cmd = "expand.exe";
+            int i;
+            string CabFile, tDest, args;
+            for (i = 0; i < Rule.SFiles.Count; i++) // Перебираем исходные файлы
+            {
+                CabFile = Rule.SFiles[i]; // Имя архива
+                tDest = Path.GetDirectoryName(Rule.DFiles[i]); // Каталог приемник
+                tDest = tDest + Path.DirectorySeparatorChar;
+                DirectoryCreateEx(tDest, Log);
+                //args = "-R \"" + CabFile + "\" \"" + tDest + "\"";
+                args = "-R " + CabFile + " " + tDest;
                 Exec(cmd, args, true);
 
             }
