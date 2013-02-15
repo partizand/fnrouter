@@ -130,6 +130,9 @@ namespace fnrouter
                 case "UNCAB":
                     Rule.Action = TAction.UnCab;
                     break;
+                case "DELETE":
+                    Rule.Action = TAction.Delete;
+                    break;
                 case "MOVENALOGDIR":
                     Rule.Action = TAction.MoveNalogDir;
                     break;
@@ -184,6 +187,9 @@ namespace fnrouter
                     break;
                 case TAction.UnCab:
                     ActUnCab();
+                    break;
+                case TAction.Delete:
+                    ActDelete();
                     break;
                 case TAction.MoveNalogDir:
                     ActMoveNalogDir();
@@ -563,6 +569,29 @@ namespace fnrouter
             }
         }
         /// <summary>
+        /// Удаление файлов
+        /// </summary>
+        void ActDelete()
+        {
+            if (_isEmpty) return;
+            
+            int i;
+            for (i = 0; i < Rule.SFiles.Count; i++)
+            {
+                
+
+                
+                        if (FileDeleteEx(Rule.SFiles[i], Log))
+                        {
+                            Log.LogMessage(LogType.Info, "Удален файл " + Rule.SFiles[i] );
+                        }
+                
+                
+                
+
+            }
+        }
+        /// <summary>
         /// Отправка файлов и уведомлений файлов на почту
         /// </summary>
         void ActSend()
@@ -903,6 +932,30 @@ namespace fnrouter
             }
 
         }
+
+        //-------------------------------------------------------------------------------------------
+        /// <summary>
+        /// Проверка не открыт ли файл кем либо еще
+        /// </summary>
+        /// <param name="FileName">Путь к файлу</param>
+        /// <returns></returns>
+        public static bool IsFileBlocked(string FileName)
+        {
+            try
+            {
+                using (FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Write))
+                {
+                    fs.Close();
+                }
+                return false;
+            }
+            catch
+            {
+
+                return true;
+            }
+        }
+
 
         /// <summary>
         /// Устанавливает пустое действие
