@@ -50,7 +50,9 @@ namespace fnrouter
         /// <summary>
         /// Настройки для текущего правила
         /// </summary>
-        MParam LocalParam;
+        //MParam Options;
+
+        Params Options;
 
         /// <summary>
         /// Правило пусто, выполнять нечего
@@ -61,9 +63,10 @@ namespace fnrouter
         }
         private bool _isEmpty;
 
-        public RuleLine(string Linestr,string ruleName,Logging log)
+        public RuleLine(string Linestr,string ruleName,Logging log, Params options)
         {
-            LDecoder = new LineDecoder(Linestr); // Декодируем строку
+            Options = options;
+            LDecoder = new LineDecoder(Linestr,Options); // Декодируем строку
             Rule = new RuleRow();
             _isEmpty = false;
             Log = log;
@@ -83,17 +86,14 @@ namespace fnrouter
                 return;
             }
             Rule.RuleName = sValue;
-            GSettings.Param.UpdateGlobal(LDecoder); // Обновляем глобальные настройки (Если это правило settings)
-
+            Options.UpdateGlobal(LDecoder); // Обновляем глобальные настройки (Если это правило settings)
+            
 
             if (!Rule.RuleName.Equals(ruleName, StringComparison.CurrentCultureIgnoreCase)) // Имя правила не совпадает
             {
                 SetVoid();
                 return;
             }
-            
-            LocalParam = new MParam(LDecoder); // Читаем локальные настройки строки если есть
-            LocalParam.CoverGlobal(GSettings.Param); // Перекрываем глобальными
 
             sValue = LDecoder.GetValue("RENDOS");
             sValue = sValue.ToUpper();
@@ -218,7 +218,7 @@ namespace fnrouter
             string cmd = LDecoder.GetValue("Cmd");
             if (String.IsNullOrEmpty(cmd)) return;
             string args = LDecoder.GetValue("Arg");
-            args = ReplaceVar.ReplDate(args);
+            //args = ReplaceVar.ReplDate(args);
 
             //cmd = GetFullFileName(cmd);
 
@@ -233,7 +233,7 @@ namespace fnrouter
                 string tArg;
                 foreach (string sfile in Rule.SFiles)
                 {
-                    tArg = ReplaceVar.ReplFile(args, sfile,Rule.SFiles);
+                    tArg = Options.ReplFile(args, sfile,Rule.SFiles);
                     Exec(cmd, tArg, WaitForExit);
                 }
             }
@@ -607,8 +607,8 @@ namespace fnrouter
             {
                 foreach (string sfile in Rule.SFiles)
                 {
-                    tSubj = ReplaceVar.ReplFile(Subj, sfile, Rule.SFiles);
-                    tMsg = ReplaceVar.ReplFile(Msg, sfile, Rule.SFiles);
+                    tSubj = Options.ReplFile(Subj, sfile, Rule.SFiles);
+                    tMsg = Options.ReplFile(Msg, sfile, Rule.SFiles);
                     if (SendMail(MailTo, tSubj, tMsg, sfile))
                     {
                         Log.LogMessage(LogType.Info, "Файл отправлен по почте " + sfile + " для " + MailTo);
@@ -617,11 +617,11 @@ namespace fnrouter
             }
             if (Rule.Action == TAction.SendMsg) // Отправка сообщения о файлах
             {
-                Subj = ReplaceVar.ReplFile(Subj, "", Rule.SFiles);
-                Msg = ReplaceVar.ReplFile(Msg, "", Rule.SFiles);
+                Subj = Options.ReplFile(Subj, "", Rule.SFiles);
+                Msg = Options.ReplFile(Msg, "", Rule.SFiles);
                 if (SendMail(MailTo, Subj, Msg, ""))
                 {
-                    Log.LogMessage(LogType.Info, "Сообщение о файле(ах) отправлено по почте " + ReplaceVar.GetFileListStr(Rule.SFiles, true) + " для " + MailTo);
+                    Log.LogMessage(LogType.Info, "Сообщение о файле(ах) отправлено по почте " + Options.GetFileListStr(Rule.SFiles, true) + " для " + MailTo);
                 }
             }
 
@@ -702,7 +702,7 @@ namespace fnrouter
             //Формирование письма
             MailMessage Message = new MailMessage();
             Attachment att=null; // Вложение
-            Message.From = new MailAddress(LocalParam.MailFrom);
+            Message.From = new MailAddress(Options.MailFrom);
             Message.To.Add(MailTo);
             Message.Subject = Subj;
             Message.IsBodyHtml = false;
@@ -717,14 +717,14 @@ namespace fnrouter
                 }
             }
             //Авторизация на SMTP сервере
-            if (Int32.TryParse(LocalParam.MailPort, out tport))
+            if (Int32.TryParse(Options.MailPort, out tport))
             {
                 port = tport;
             }
             try
             {
-                SmtpClient Smtp = new SmtpClient(LocalParam.MailSrv, port);
-                if (!String.IsNullOrEmpty(LocalParam.MailPass)) Smtp.Credentials = new NetworkCredential(LocalParam.MailUser, LocalParam.MailPass);
+                SmtpClient Smtp = new SmtpClient(Options.MailSrv, port);
+                if (!String.IsNullOrEmpty(Options.MailPass)) Smtp.Credentials = new NetworkCredential(Options.MailUser, Options.MailPass);
                 Smtp.Send(Message);//отправка
                 
                 ret=true;
@@ -741,10 +741,10 @@ namespace fnrouter
                 switch (ESmtp.StatusCode)
                 {
                     case SmtpStatusCode.GeneralFailure:
-                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. Сервер недоступен " + LocalParam.MailSrv + ". " + ESmtp.Message);
+                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. Сервер недоступен " + Options.MailSrv + ". " + ESmtp.Message);
                         break;
                     default:
-                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. StatusCode=" + ESmtp.StatusCode.ToString() + ". Smtp host=" + LocalParam.MailSrv +". "+ ESmtp.Message);
+                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. StatusCode=" + ESmtp.StatusCode.ToString() + ". Smtp host=" + Options.MailSrv +". "+ ESmtp.Message);
                         break;
                 }
 
@@ -986,7 +986,7 @@ namespace fnrouter
         {
             
             Rule.Source = LDecoder.GetValue("S");
-            Rule.Source = ReplaceVar.ReplDate(Rule.Source); // Подстановка текущих даты времени
+            //Rule.Source = ReplaceVar.ReplDate(Rule.Source); // Подстановка текущих даты времени
             Rule.Contain = LDecoder.GetValue("CONTAIN");
             if (String.IsNullOrEmpty(Rule.Source)) return;
             if (Rule.Action == TAction.MoveNalogDir) return; // Перемещение каталога налоговой, файлов нет
@@ -1011,14 +1011,14 @@ namespace fnrouter
             string tDest;
 
             Rule.Dest = LDecoder.GetValue("D");
-            Rule.Dest = ReplaceVar.ReplDate(Rule.Dest); // Замена даты
+            //Rule.Dest = ReplaceVar.ReplDate(Rule.Dest); // Замена даты
             if (String.IsNullOrEmpty(Rule.Dest)) return; // не указан приемник
             if (Rule.Action == TAction.MoveNalogDir) return; // Перемещение каталога налоговой, файлов нет
             string shortFileName;
             foreach (string FullSFile in Rule.SFiles) // перебираем все исходные файлы
             {
                 shortFileName = GetRenFileName(FullSFile); // Переименование если нужно
-                tDest = ReplaceVar.ReplFile(Rule.Dest, FullSFile, Rule.SFiles); // Замена %file% в имени каталога приемника
+                tDest = Options.ReplFile(Rule.Dest, FullSFile, Rule.SFiles); // Замена %file% в имени каталога приемника
                 Rule.DFiles.Add(Path.Combine(tDest,shortFileName));
             }
 

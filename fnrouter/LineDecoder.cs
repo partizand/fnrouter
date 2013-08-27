@@ -35,6 +35,8 @@ namespace fnrouter
     /// </summary>
     class LineDecoder
     {
+
+        Params Options;
         /// <summary>
         /// Декодируемая строка
         /// </summary>
@@ -57,8 +59,9 @@ namespace fnrouter
         /// </summary>
         List<string> Values;
 
-        public LineDecoder(string Line)
+        public LineDecoder(string Line, Params options)
         {
+            Options = options;
             LineStr = Line;
             DecodeLine();
         }
@@ -105,7 +108,9 @@ namespace fnrouter
                     Value = LineStr.Substring(PosE + 1, PosC - PosE - 1);
                     //KeyName = KeyName.ToUpper();
                     Keys.Add(KeyName.Trim()); //Имя ключа
-                    Values.Add(Value.Trim()); // Значение ключа
+                    Value = Value.Trim();
+                    Value = Options.ReplStdOptions(Value); // Замена переменных %..% кроме имен файлов
+                    Values.Add(Value); // Значение ключа
                     CurPos = PosC + 1;
                 }
                 else

@@ -38,12 +38,13 @@ namespace fnrouter
         string RuleName;
         string ConfigFile; // Имя файла с конфигурацией
         Logging Log;
+        Params Options;
 
-        public FRouter(string FileName, string ruleName)
+        public FRouter(string FileName, string ruleName, Params Param)
         {
             ConfigFile = FileName;
             RuleName = ruleName;
-
+            Options = Param;
 
             Log = new Logging("Log", RuleName, LogType.Info);
 
@@ -62,7 +63,7 @@ namespace fnrouter
 
             foreach (string sLine in Lines)
             {
-                CurRule = new RuleLine(sLine,RuleName,Log);
+                CurRule = new RuleLine(sLine,RuleName,Log,Options);
                 if (!CurRule.IsEmpty)
                 {
                     CurRule.DoAction();

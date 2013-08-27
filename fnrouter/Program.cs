@@ -41,7 +41,7 @@ namespace fnrouter
     {
         static string RuleName;//="test";
         static string ConfigFile="fnrouter.ini";
-
+        
         
         private static bool isNew;
         private static string guid;
@@ -86,8 +86,11 @@ namespace fnrouter
 
             Console.WriteLine("Запуск правила " + RuleName+" из файла "+ConfigFile);
 
-            GSettings.Param = new MParam("srv", "", "", "25", "sdfsd@sfsdf");
-            FRouter router = new FRouter(ConfigFile, RuleName);
+            Params Options;
+            Options = new Params("");
+
+            //GSettings.Param = new MParam("srv", "", "", "25", "sdfsd@sfsdf");
+            FRouter router = new FRouter(ConfigFile, RuleName,Options);
             router.DoRule();
 
 

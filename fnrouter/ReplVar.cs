@@ -39,7 +39,7 @@ namespace fnrouter
         /// <summary>
         /// Тип замены
         /// </summary>
-        public enum ReplType { All, CurDate, FileName };
+        public enum ReplType { All, CurDate, FileName,Option };
 
         public static string ReplAll(string S, string FileName, List<string> SFiles)
         {
@@ -62,8 +62,6 @@ namespace fnrouter
             param = GetStrVar(newS,ReplType.CurDate);
             while (!String.IsNullOrEmpty(param))
             {
-                
-                
                     strDate = dtNow.ToString(param);
                     newS = newS.Replace("%" + param + "%", strDate);
                 
