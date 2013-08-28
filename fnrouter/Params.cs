@@ -13,7 +13,7 @@ namespace fnrouter
         /// <summary>
         /// Тип замены
         /// </summary>
-        enum ReplType { All, CurDate, FileName, Option };
+        enum ReplType { All, CurDate, FileName, Option,Undefined };
 
         public string MailSrv;
         public string MailUser;
@@ -35,7 +35,7 @@ namespace fnrouter
 
         public Params(string iniFile)
         {
-            Options = new Dictionary<string, string>();
+            Options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             FillStdOptions();
         }
 
@@ -48,6 +48,11 @@ namespace fnrouter
         /// <returns></returns>
         public string ReplStdOptions(string S)
         {
+            string newS;
+            newS = ReplDate(S);
+            newS = ReplUserOptions(newS);
+            return newS;
+            /*
             string param, newS, strDate;
             DateTime dtNow = DateTime.Now;
             ReplType repType;
@@ -72,6 +77,7 @@ namespace fnrouter
                 param = GetStrVar(newS, ReplType.CurDate);
             }
             return newS;
+             * */
         }
 
         
@@ -97,6 +103,28 @@ namespace fnrouter
             }
             return newS;
         }
+        /// <summary>
+        /// Заменяет переменнные заданные пользователем
+        /// </summary>
+        /// <param name="S"></param>
+        /// <returns></returns>
+        public string ReplUserOptions(string S)
+        {
+            string param, newS;
+            
+            newS = S;
+            param = GetStrVar(newS, ReplType.Option);
+            while (!String.IsNullOrEmpty(param))
+            {
+                
+                newS = ReplaceParam(newS, param, Options[param]);
+                param = GetStrVar(newS, ReplType.CurDate);
+            }
+            return newS;
+        }
+
+        
+
         /// <summary>
         /// Заменяет праметры типа %file% в строке на их значения
         /// </summary>
@@ -242,7 +270,9 @@ namespace fnrouter
                 return ReplType.CurDate;
             if (FileOptions.Exists(obj => String.Compare(obj, var, true) == 0))
                 return ReplType.FileName;
-            return ReplType.Option;
+            if (Options.ContainsKey(var))
+                return ReplType.Option;
+            return ReplType.Undefined;
 
         }
         /// <summary>
@@ -351,15 +381,68 @@ namespace fnrouter
             string sValue;
             sValue = LDecoder.GetValue("Rule");
             if (!sValue.Equals("Settings", StringComparison.CurrentCultureIgnoreCase)) return;
-            Read(LDecoder, false);
+            ReadMailSet(LDecoder, false);
 
         }
         /// <summary>
-        /// Заполняет настройки из строки
+        /// Читает из строки настройки почты и переменные пользователя
+        /// </summary>
+        /// <param name="LDecoder"></param>
+        public void ReadLine(LineDecoder LDecoder)
+        {
+            ReadMailSet(LDecoder, false);
+            ReadParam(LDecoder);
+        }
+
+        /// <summary>
+        /// Чтение переменных пользователя в строке
+        /// </summary>
+        /// <param name="LDecoder"></param>
+        private void ReadParam(LineDecoder LDecoder)
+        {
+            string[] sValue;
+            foreach (KeyValuePair<string, string> kvp in LDecoder.Words)
+            {
+                if (kvp.Key.StartsWith("SetVar", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    sValue = kvp.Value.Split(':');
+                    if (sValue.Length > 1)
+                    {
+                        Options.Add(sValue[0], sValue[1]);
+                    }
+                }
+            }
+            
+        }
+        /// <summary>
+        /// Заменяет в переменных на значения других переменных
+        /// </summary>
+        void ExpandOptions()
+        {
+            bool contains;
+            int i=0;
+            do
+            {
+                contains = false;
+                foreach (KeyValuePair<string, string> kvp in Options)
+                {
+                    if (kvp.Value.Contains("%"))
+                    {
+                        Options[kvp.Key] = ReplUserOptions(Options[kvp.Key]);
+                        contains = true;
+                    }
+                }
+                i++;
+            }
+            while (contains && i < 20);
+        }
+        
+        /// <summary>
+        /// Чтение настроек почты
         /// </summary>
         /// <param name="LDecoder"></param>
         /// <param name="ReadEmpty"></param>
-        public void Read(LineDecoder LDecoder, bool ReadEmpty)
+        private void ReadMailSet(LineDecoder LDecoder, bool ReadEmpty)
         {
             string sValue;
             sValue = LDecoder.GetValue("MAILSRV");

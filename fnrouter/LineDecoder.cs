@@ -46,22 +46,30 @@ namespace fnrouter
         /// </summary>
         public int NumKeys
         {
-            get { return Keys.Count; }
+            //get { return Keys.Count; }
+            get { return Words.Count; }
             
         }
 
         /// <summary>
         /// Список ключей
         /// </summary>
-        List<string> Keys;
+        //List<string> Keys;
         /// <summary>
         /// Список значений ключей
         /// </summary>
-        List<string> Values;
+        //List<string> Values;
+
+
+        /// <summary>
+        /// Список ключей и параметров
+        /// </summary>
+        public Dictionary<string, string> Words;
 
         public LineDecoder(string Line, Params options)
         {
             Options = options;
+            Words = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase); // Регистронезависимое сравнение
             LineStr = Line;
             DecodeLine();
         }
@@ -72,10 +80,13 @@ namespace fnrouter
         /// <returns></returns>
         public string GetValue(string KeyName)
         {
-            int i=Keys.FindIndex (Key=>Key.Equals(KeyName,StringComparison.CurrentCultureIgnoreCase)); // Индекс ключа
-            if (i > -1) return Values[i];
-            else return "";
-
+            if (Words.ContainsKey(KeyName)) return Words[KeyName];
+            return "";
+            
+            //int i=Keys.FindIndex (Key=>Key.Equals(KeyName,StringComparison.CurrentCultureIgnoreCase)); // Индекс ключа
+            //if (i > -1) return Values[i];
+            //else return "";
+           
         }
 
         /// <summary>
@@ -88,8 +99,9 @@ namespace fnrouter
             if (i > -1) LineStr=LineStr.Substring(0, i);
             LineStr=LineStr.Trim(); // Убираем пробелы
 
-            Keys = new List<string>();
-            Values = new List<string>();
+            Words.Clear();
+            //Keys = new List<string>();
+            //Values = new List<string>();
 
             if (String.IsNullOrEmpty(LineStr)) return;
 
@@ -107,10 +119,12 @@ namespace fnrouter
                     KeyName = LineStr.Substring(CurPos, PosE-CurPos );
                     Value = LineStr.Substring(PosE + 1, PosC - PosE - 1);
                     //KeyName = KeyName.ToUpper();
-                    Keys.Add(KeyName.Trim()); //Имя ключа
+                    KeyName.Trim();
+                    //Keys.Add(KeyName); //Имя ключа
                     Value = Value.Trim();
                     Value = Options.ReplStdOptions(Value); // Замена переменных %..% кроме имен файлов
-                    Values.Add(Value); // Значение ключа
+                    //Values.Add(Value); // Значение ключа
+                    Words[KeyName] = Value;
                     CurPos = PosC + 1;
                 }
                 else
