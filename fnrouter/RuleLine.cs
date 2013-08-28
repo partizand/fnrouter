@@ -86,8 +86,8 @@ namespace fnrouter
                 return;
             }
             Rule.RuleName = sValue;
-            Options.UpdateGlobal(LDecoder); // Обновляем глобальные настройки (Если это правило settings)
-            
+            //Options.UpdateGlobal(LDecoder); // Обновляем глобальные настройки (Если это правило settings)
+            Options.ReadLine(LDecoder);
 
             if (!Rule.RuleName.Equals(ruleName, StringComparison.CurrentCultureIgnoreCase)) // Имя правила не совпадает
             {

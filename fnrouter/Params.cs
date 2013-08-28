@@ -214,6 +214,7 @@ namespace fnrouter
             {
                 iniFile = "frouter.ini";
             }
+            if (!File.Exists(iniFile)) return;
             IniFile ini = new IniFile();
             ini.Load(iniFile);
             // Чтение настроек почты
@@ -374,6 +375,7 @@ namespace fnrouter
             return sList;
         }
 
+        /*
         /// <summary>
         /// Обновляет глобальные настройки. Пустые параметры не обновляются. Обновляется только если rule=settings
         /// </summary>
@@ -386,6 +388,7 @@ namespace fnrouter
             ReadMailSet(LDecoder, false);
 
         }
+        */
         /// <summary>
         /// Читает из строки настройки почты и переменные пользователя
         /// </summary>
