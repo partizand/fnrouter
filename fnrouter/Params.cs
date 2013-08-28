@@ -233,7 +233,9 @@ namespace fnrouter
                 Options.Add(k.Name, k.Value);
             }
             Options.Add("ComputerName", System.Environment.MachineName);
+            Options.Add("MachineName", System.Environment.MachineName);
             Options.Add("UserName", System.Environment.UserName);
+            ExpandOptions();
         }
         /// <summary>
         /// Заполнение именами стандартных переменных
@@ -412,6 +414,7 @@ namespace fnrouter
                     }
                 }
             }
+            ExpandOptions();
             
         }
         /// <summary>
