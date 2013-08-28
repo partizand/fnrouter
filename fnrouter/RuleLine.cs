@@ -76,6 +76,8 @@ namespace fnrouter
                 SetVoid();
                 return;
             }
+            Options.ReadLine(LDecoder);
+
             string sValue;
             // Имя правила
             sValue = LDecoder.GetValue("RULE");
@@ -87,7 +89,7 @@ namespace fnrouter
             }
             Rule.RuleName = sValue;
             //Options.UpdateGlobal(LDecoder); // Обновляем глобальные настройки (Если это правило settings)
-            Options.ReadLine(LDecoder);
+            
 
             if (!Rule.RuleName.Equals(ruleName, StringComparison.CurrentCultureIgnoreCase)) // Имя правила не совпадает
             {

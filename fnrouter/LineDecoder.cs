@@ -119,7 +119,7 @@ namespace fnrouter
                     KeyName = LineStr.Substring(CurPos, PosE-CurPos );
                     Value = LineStr.Substring(PosE + 1, PosC - PosE - 1);
                     //KeyName = KeyName.ToUpper();
-                    KeyName.Trim();
+                    KeyName=KeyName.Trim();
                     //Keys.Add(KeyName); //Имя ключа
                     Value = Value.Trim();
                     Value = Options.ReplStdOptions(Value); // Замена переменных %..% кроме имен файлов

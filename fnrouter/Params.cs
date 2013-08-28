@@ -35,8 +35,9 @@ namespace fnrouter
 
         public Params(string iniFile)
         {
-            Options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            
             FillStdOptions();
+            ReadIni(iniFile);
         }
 
         #region Public functions
@@ -118,7 +119,7 @@ namespace fnrouter
             {
                 
                 newS = ReplaceParam(newS, param, Options[param]);
-                param = GetStrVar(newS, ReplType.CurDate);
+                param = GetStrVar(newS, ReplType.Option);
             }
             return newS;
         }
@@ -214,6 +215,8 @@ namespace fnrouter
             {
                 iniFile = "frouter.ini";
             }
+            
+            
             if (!File.Exists(iniFile)) return;
             IniFile ini = new IniFile();
             ini.Load(iniFile);
@@ -233,9 +236,7 @@ namespace fnrouter
             {
                 Options.Add(k.Name, k.Value);
             }
-            Options.Add("ComputerName", System.Environment.MachineName);
-            Options.Add("MachineName", System.Environment.MachineName);
-            Options.Add("UserName", System.Environment.UserName);
+            
             ExpandOptions();
         }
         /// <summary>
@@ -257,8 +258,11 @@ namespace fnrouter
             
             FileOptions=new List<string>{"ListFileName","ListFullFileName","FullFileName",
                 "FileName","FileWithoutExt","ExtFile","Nalog"};
-
             
+            Options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Options.Add("ComputerName", System.Environment.MachineName);
+            Options.Add("MachineName", System.Environment.MachineName);
+            Options.Add("UserName", System.Environment.UserName);
 
         }
         /// <summary>
@@ -410,7 +414,7 @@ namespace fnrouter
             {
                 if (kvp.Key.StartsWith("SetVar", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    sValue = kvp.Value.Split(':');
+                    sValue = kvp.Value.Split('|');
                     if (sValue.Length > 1)
                     {
                         Options.Add(sValue[0], sValue[1]);
@@ -430,6 +434,15 @@ namespace fnrouter
             do
             {
                 contains = false;
+                foreach (string key in Options.Keys)
+                {
+                    if (Options[key].Contains("%"))
+                    {
+                        Options[key] = ReplUserOptions(Options[key]);
+                        contains = true;
+                    }
+                }
+                /*
                 foreach (KeyValuePair<string, string> kvp in Options)
                 {
                     if (kvp.Value.Contains("%"))
@@ -438,6 +451,7 @@ namespace fnrouter
                         contains = true;
                     }
                 }
+                */
                 i++;
             }
             while (contains && i < 20);
