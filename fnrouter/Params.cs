@@ -229,7 +229,7 @@ namespace fnrouter
             MailFrom = ini.GetKeyValue("Mail", "MailFrom");
 
             // Чтение переменных
-            IniFile.IniSection OptSect = ini.GetSection("Options");
+            IniFile.IniSection OptSect = ini.GetSection("Vars");
             
             if (OptSect == null) return;
             foreach (IniFile.IniSection.IniKey k in OptSect.Keys)
