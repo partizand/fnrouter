@@ -430,11 +430,17 @@ namespace fnrouter
         void ExpandOptions()
         {
             bool contains;
+            string[] keys;
+            keys = new string[Options.Count];
+            //List<string> keys;
+
             int i=0;
             do
             {
                 contains = false;
-                foreach (string key in Options.Keys)
+                
+                Options.Keys.CopyTo(keys, 0);
+                foreach (string key in keys)
                 {
                     if (Options[key].Contains("%"))
                     {
