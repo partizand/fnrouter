@@ -36,7 +36,7 @@ namespace fnrouter
     class LineDecoder
     {
 
-        Params Options;
+        Params Par;
         /// <summary>
         /// Декодируемая строка
         /// </summary>
@@ -66,9 +66,9 @@ namespace fnrouter
         /// </summary>
         public Dictionary<string, string> Words;
 
-        public LineDecoder(string Line, Params options)
+        public LineDecoder(string Line, Params param)
         {
-            Options = options;
+            Par = param;
             Words = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase); // Регистронезависимое сравнение
             LineStr = Line;
             DecodeLine();
@@ -88,6 +88,28 @@ namespace fnrouter
             //else return "";
            
         }
+        /// <summary>
+        /// Проверка строки на подстановку переменных. true- все ок, false - переменные не раскрыты
+        /// </summary>
+        public bool IsVarExpanded(out string Val)
+        {
+            string val;
+            
+            string testFile = "c:\\test\\test.txt";
+            List<string> tFiles=new List<string>{"c:\\test\\test.txt","c:\\test\\test.zip","c:\\test\\test.doc"};
+            foreach (string value in Words.Values)
+            {
+                val = Par.ReplFile(value, testFile, tFiles);
+                if (Par.ContainVar(val))
+                {
+                    Val = val;
+                    return false;
+                }
+            }
+            Val = "";
+            return true;
+        }
+        
 
         /// <summary>
         /// Заполнение массивов ключ-значение по строке, убирание комментария
@@ -122,7 +144,7 @@ namespace fnrouter
                     KeyName=KeyName.Trim();
                     //Keys.Add(KeyName); //Имя ключа
                     Value = Value.Trim();
-                    Value = Options.ReplStdOptions(Value); // Замена переменных %..% кроме имен файлов
+                    Value = Par.ReplStdOptions(Value); // Замена переменных %..% кроме имен файлов
                     //Values.Add(Value); // Значение ключа
                     Words[KeyName] = Value;
                     CurPos = PosC + 1;

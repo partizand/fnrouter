@@ -52,7 +52,7 @@ namespace fnrouter
         /// </summary>
         //MParam Options;
 
-        Params Options;
+        Params Par;
 
         /// <summary>
         /// Правило пусто, выполнять нечего
@@ -63,10 +63,10 @@ namespace fnrouter
         }
         private bool _isEmpty;
 
-        public RuleLine(string Linestr,string ruleName,Logging log, Params options)
+        public RuleLine(string Linestr,string ruleName,Logging log, Params param)
         {
-            Options = options;
-            LDecoder = new LineDecoder(Linestr,Options); // Декодируем строку
+            Par = param;
+            LDecoder = new LineDecoder(Linestr,Par); // Декодируем строку
             Rule = new RuleRow();
             _isEmpty = false;
             Log = log;
@@ -76,9 +76,22 @@ namespace fnrouter
                 SetVoid();
                 return;
             }
-            Options.ReadLine(LDecoder);
+            Par.ReadLine(LDecoder);
 
             string sValue;
+
+            if (Par.Debug)
+            {
+                string val;
+                if (!LDecoder.IsVarExpanded(out val))
+                {
+                    Log.LogMessage(LogType.Error, "Не найдена переменная в строке [" + Par.CurLineNum.ToString()+"] "+val);
+                    return;
+                }
+                else
+                    return;
+            }
+
             // Имя правила
             sValue = LDecoder.GetValue("RULE");
             //sValue = sValue.ToUpper();
@@ -235,7 +248,7 @@ namespace fnrouter
                 string tArg;
                 foreach (string sfile in Rule.SFiles)
                 {
-                    tArg = Options.ReplFile(args, sfile,Rule.SFiles);
+                    tArg = Par.ReplFile(args, sfile,Rule.SFiles);
                     Exec(cmd, tArg, WaitForExit);
                 }
             }
@@ -609,8 +622,8 @@ namespace fnrouter
             {
                 foreach (string sfile in Rule.SFiles)
                 {
-                    tSubj = Options.ReplFile(Subj, sfile, Rule.SFiles);
-                    tMsg = Options.ReplFile(Msg, sfile, Rule.SFiles);
+                    tSubj = Par.ReplFile(Subj, sfile, Rule.SFiles);
+                    tMsg = Par.ReplFile(Msg, sfile, Rule.SFiles);
                     if (SendMail(MailTo, tSubj, tMsg, sfile))
                     {
                         Log.LogMessage(LogType.Info, "Файл отправлен по почте " + sfile + " для " + MailTo);
@@ -619,11 +632,11 @@ namespace fnrouter
             }
             if (Rule.Action == TAction.SendMsg) // Отправка сообщения о файлах
             {
-                Subj = Options.ReplFile(Subj, "", Rule.SFiles);
-                Msg = Options.ReplFile(Msg, "", Rule.SFiles);
+                Subj = Par.ReplFile(Subj, "", Rule.SFiles);
+                Msg = Par.ReplFile(Msg, "", Rule.SFiles);
                 if (SendMail(MailTo, Subj, Msg, ""))
                 {
-                    Log.LogMessage(LogType.Info, "Сообщение о файле(ах) отправлено по почте " + Options.GetFileListStr(Rule.SFiles, true) + " для " + MailTo);
+                    Log.LogMessage(LogType.Info, "Сообщение о файле(ах) отправлено по почте " + Par.GetFileListStr(Rule.SFiles, true) + " для " + MailTo);
                 }
             }
 
@@ -704,7 +717,7 @@ namespace fnrouter
             //Формирование письма
             MailMessage Message = new MailMessage();
             Attachment att=null; // Вложение
-            Message.From = new MailAddress(Options.MailFrom);
+            Message.From = new MailAddress(Par.MailFrom);
             Message.To.Add(MailTo);
             Message.Subject = Subj;
             Message.IsBodyHtml = false;
@@ -719,14 +732,14 @@ namespace fnrouter
                 }
             }
             //Авторизация на SMTP сервере
-            if (Int32.TryParse(Options.MailPort, out tport))
+            if (Int32.TryParse(Par.MailPort, out tport))
             {
                 port = tport;
             }
             try
             {
-                SmtpClient Smtp = new SmtpClient(Options.MailSrv, port);
-                if (!String.IsNullOrEmpty(Options.MailPass)) Smtp.Credentials = new NetworkCredential(Options.MailUser, Options.MailPass);
+                SmtpClient Smtp = new SmtpClient(Par.MailSrv, port);
+                if (!String.IsNullOrEmpty(Par.MailPass)) Smtp.Credentials = new NetworkCredential(Par.MailUser, Par.MailPass);
                 Smtp.Send(Message);//отправка
                 
                 ret=true;
@@ -743,10 +756,10 @@ namespace fnrouter
                 switch (ESmtp.StatusCode)
                 {
                     case SmtpStatusCode.GeneralFailure:
-                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. Сервер недоступен " + Options.MailSrv + ". " + ESmtp.Message);
+                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. Сервер недоступен " + Par.MailSrv + ". " + ESmtp.Message);
                         break;
                     default:
-                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. StatusCode=" + ESmtp.StatusCode.ToString() + ". Smtp host=" + Options.MailSrv +". "+ ESmtp.Message);
+                        Log.LogMessage(LogType.Error, "Ошибка отправки на почту. SmtpException. StatusCode=" + ESmtp.StatusCode.ToString() + ". Smtp host=" + Par.MailSrv +". "+ ESmtp.Message);
                         break;
                 }
 
@@ -1020,7 +1033,7 @@ namespace fnrouter
             foreach (string FullSFile in Rule.SFiles) // перебираем все исходные файлы
             {
                 shortFileName = GetRenFileName(FullSFile); // Переименование если нужно
-                tDest = Options.ReplFile(Rule.Dest, FullSFile, Rule.SFiles); // Замена %file% в имени каталога приемника
+                tDest = Par.ReplFile(Rule.Dest, FullSFile, Rule.SFiles); // Замена %file% в имени каталога приемника
                 Rule.DFiles.Add(Path.Combine(tDest,shortFileName));
             }
 

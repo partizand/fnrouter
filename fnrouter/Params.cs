@@ -21,6 +21,20 @@ namespace fnrouter
         public string MailPort = "25";
         public string MailFrom;
         /// <summary>
+        /// Режим отладки
+        /// </summary>
+        public bool Debug;
+        
+        /// <summary>
+        /// Номер текущей обрабатываемой строки
+        /// </summary>
+        public int CurLineNum;
+        /// <summary>
+        /// Текущая секция
+        /// </summary>
+        public string CurSection;
+
+        /// <summary>
         /// Переменные задаваемые пользователем
         /// </summary>
         public Dictionary<string, string> Options;
@@ -33,11 +47,14 @@ namespace fnrouter
         /// </summary>
         public List<string> FileOptions;
 
+
+
         public Params(string iniFile)
         {
             
             FillStdOptions();
             ReadIni(iniFile);
+            Debug = false;
         }
 
         #region Public functions
@@ -130,7 +147,8 @@ namespace fnrouter
         /// Заменяет праметры типа %file% в строке на их значения
         /// </summary>
         /// <param name="S"></param>
-        /// <param name="FileName"></param>
+        /// <param name="FileName">Имя файла для замены %FileName%</param>
+        /// <param name="SFiles">Список файлов для замены в %List%</param>
         /// <returns></returns>
         public string ReplFile(string S, string FileName, List<string> SFiles)
         {
@@ -197,6 +215,17 @@ namespace fnrouter
 
         #region Private functions
 
+
+        /// <summary>
+        /// Содежит ли строка не раскрытые переменные (знак %)
+        /// </summary>
+        /// <param name="S"></param>
+        /// <returns></returns>
+        public bool ContainVar(string S)
+        {
+            return S.Contains("%");
+        }
+
         /// <summary>
         /// Подстановка занчения параметра в строку. Имя параметра без %
         /// </summary>
@@ -254,7 +283,7 @@ namespace fnrouter
             "s","ss","t","tt",
             "y","yy","yyy","yyyy","yyyyy",
             "z","zz","zzz",
-            "yyMMdd","yyyyMM"};
+            "yyMMdd","yyyyMM","HHmm"};
             
             FileOptions=new List<string>{"ListFileName","ListFullFileName","FullFileName",
                 "FileName","FileWithoutExt","ExtFile","Nalog"};

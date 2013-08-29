@@ -38,13 +38,13 @@ namespace fnrouter
         string RuleName;
         string ConfigFile; // Имя файла с конфигурацией
         Logging Log;
-        Params Options;
+        Params Par;
 
         public FRouter(string FileName, string ruleName, Params Param)
         {
             ConfigFile = FileName;
             RuleName = ruleName;
-            Options = Param;
+            Par = Param;
 
             Log = new Logging("Log", RuleName, LogType.Info);
 
@@ -60,14 +60,16 @@ namespace fnrouter
 
 
             Lines = File.ReadAllLines(ConfigFile,Encoding.GetEncoding(1251)); // Читаем файл с правилами в строки
-
+            int i = 1;
             foreach (string sLine in Lines)
             {
-                CurRule = new RuleLine(sLine,RuleName,Log,Options);
+                Par.CurLineNum = i;
+                CurRule = new RuleLine(sLine,RuleName,Log,Par);
                 if (!CurRule.IsEmpty)
                 {
                     CurRule.DoAction();
                 }
+                i++;
             }
         }
         

@@ -47,6 +47,8 @@ namespace fnrouter
         private static string guid;
         private static Mutex _mutex;
 
+        static bool debug=false;
+
         static void Main(string[] args)
         {
             // Номер сборки
@@ -57,12 +59,14 @@ namespace fnrouter
             
             ReadArgs(args);
 
+
+
             if (!File.Exists(ConfigFile))
             {
                 Console.WriteLine("Не найден файл с правилами: "+ConfigFile);
                 return;
             }
-            if (String.IsNullOrEmpty(RuleName)) // Не задано правило
+            if (String.IsNullOrEmpty(RuleName) && !debug) // Не задано правило
             {
                 ShowHelp();
                 return;
@@ -84,13 +88,13 @@ namespace fnrouter
 
             //Console.WriteLine("Debug: Mutex guid:" + guid);
 
-            Console.WriteLine("Запуск правила " + RuleName+" из файла "+ConfigFile);
-
-            Params Options;
-            Options = new Params("");
-
+            if (!debug) Console.WriteLine("Запуск правила " + RuleName+" из файла "+ConfigFile);
+            else Console.WriteLine("Проверка файла " + ConfigFile);
+            Params Par;
+            Par = new Params("");
+            Par.Debug = debug;
             //GSettings.Param = new MParam("srv", "", "", "25", "sdfsd@sfsdf");
-            FRouter router = new FRouter(ConfigFile, RuleName,Options);
+            FRouter router = new FRouter(ConfigFile, RuleName,Par);
             router.DoRule();
 
 
@@ -98,8 +102,9 @@ namespace fnrouter
 
         static void ShowHelp()
         {
-            Console.WriteLine("Using: fnrouter.exe [-cfile:имя_файла_с_правилами] -rule:имя_правила");
+            Console.WriteLine("Using: fnrouter.exe [-cfile:имя_файла_с_правилами] -rule:имя_правила [-debug]");
             Console.WriteLine("Имя файла с правилами по умолчанию fnrouter.ini");
+            Console.WriteLine("-debug Проверка подстановки переменных %% в файле");
         }
 
         /// <summary>
@@ -117,6 +122,10 @@ namespace fnrouter
                 if (arg.StartsWith("-rule:", true, null)) // Имя правила
                 {
                     RuleName = GetArgValue(arg);
+                }
+                if (arg.Equals("-debug", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    debug = true; 
                 }
 
             }
