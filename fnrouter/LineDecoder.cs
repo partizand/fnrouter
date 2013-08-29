@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace fnrouter
 {
@@ -88,6 +89,12 @@ namespace fnrouter
             //else return "";
            
         }
+
+        public bool ContainsKey(string KeyName)
+        {
+            return Words.ContainsKey(KeyName);
+        }
+
         /// <summary>
         /// Проверка строки на подстановку переменных. true- все ок, false - переменные не раскрыты
         /// </summary>
@@ -121,9 +128,22 @@ namespace fnrouter
             if (i > -1) LineStr=LineStr.Substring(0, i);
             LineStr=LineStr.Trim(); // Убираем пробелы
 
+            
+
             Words.Clear();
-            //Keys = new List<string>();
-            //Values = new List<string>();
+
+
+            // Ищем строку с секцией, вроде [abc]
+            Regex regexsection = new Regex("^[\\s]*\\[[\\s]*([^\\[\\s].*[^\\s\\]])[\\s]*\\][\\s]*$", (RegexOptions.Singleline | RegexOptions.IgnoreCase));
+            Match m = null;
+            if (regexsection.Match(LineStr).Success)
+            {
+                m = regexsection.Match(LineStr);
+                Words.Add("Section", m.Groups[1].Value);
+                //Trace.WriteLine(string.Format("Adding section [{0}]", m.Groups[1].Value));
+                //tempsection = AddSection(m.Groups[1].Value);
+                return;
+            }
 
             if (String.IsNullOrEmpty(LineStr)) return;
 

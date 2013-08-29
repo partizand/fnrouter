@@ -40,7 +40,7 @@ namespace fnrouter
         Logging Log;
         Params Par;
 
-        public FRouter(string FileName, string ruleName, Params Param)
+        public FRouter(string FileName, string ruleName,ref Params Param)
         {
             ConfigFile = FileName;
             RuleName = ruleName;
@@ -64,7 +64,7 @@ namespace fnrouter
             foreach (string sLine in Lines)
             {
                 Par.CurLineNum = i;
-                CurRule = new RuleLine(sLine,RuleName,Log,Par);
+                CurRule = new RuleLine(sLine,RuleName,Log,ref Par);
                 if (!CurRule.IsEmpty)
                 {
                     CurRule.DoAction();

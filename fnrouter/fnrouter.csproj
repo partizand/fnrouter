@@ -33,16 +33,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IniFileCs, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\IniFile\IniFileCs\bin\Release\IniFileCs.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DirInfo.cs" />
+    <Compile Include="IniFileCs.cs" />
     <Compile Include="LineDecoder.cs" />
     <Compile Include="logging.cs" />
     <Compile Include="Params.cs" />

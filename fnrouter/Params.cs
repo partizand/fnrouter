@@ -32,7 +32,8 @@ namespace fnrouter
         /// <summary>
         /// Текущая секция
         /// </summary>
-        public string CurSection;
+        public string Section;
+        
 
         /// <summary>
         /// Переменные задаваемые пользователем

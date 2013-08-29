@@ -63,7 +63,7 @@ namespace fnrouter
         }
         private bool _isEmpty;
 
-        public RuleLine(string Linestr,string ruleName,Logging log, Params param)
+        public RuleLine(string Linestr,string ruleName,Logging log, ref Params param)
         {
             Par = param;
             LDecoder = new LineDecoder(Linestr,Par); // Декодируем строку
@@ -76,10 +76,33 @@ namespace fnrouter
                 SetVoid();
                 return;
             }
-            Par.ReadLine(LDecoder);
+            
+            
+
+            
 
             string sValue;
 
+            
+            if (LDecoder.ContainsKey("Section")) // Это начало новой секции
+            {
+                Par.Section = LDecoder.GetValue("Section");
+                SetVoid();
+                return;
+            }
+
+            // Секции могут быть:
+            // Mail, Vars и имена правил
+
+            if (Par.Section.Equals("Mail", StringComparison.CurrentCultureIgnoreCase)
+                || Par.Section.Equals("Vars", StringComparison.CurrentCultureIgnoreCase))
+            {
+                SetVoid();
+                return;
+            }
+
+            Par.ReadLine(LDecoder);
+            
             if (Par.Debug)
             {
                 string val;
@@ -92,7 +115,15 @@ namespace fnrouter
                     return;
             }
 
-            // Имя правила
+            
+            
+            // Rule не задано явно, копируем из section
+            if (!LDecoder.ContainsKey("RULE") && !String.IsNullOrEmpty(Par.Section))
+            {
+                LDecoder.Words.Add("RULE", Par.Section);
+                
+            }
+
             sValue = LDecoder.GetValue("RULE");
             //sValue = sValue.ToUpper();
             if (String.IsNullOrEmpty(sValue)) // Имя правила пусто

@@ -49,6 +49,8 @@ namespace fnrouter
 
         static bool debug=false;
 
+        static Params Par;
+
         static void Main(string[] args)
         {
             // Номер сборки
@@ -90,11 +92,11 @@ namespace fnrouter
 
             if (!debug) Console.WriteLine("Запуск правила " + RuleName+" из файла "+ConfigFile);
             else Console.WriteLine("Проверка файла " + ConfigFile);
-            Params Par;
-            Par = new Params("");
+
+            Par = new Params(ConfigFile);
             Par.Debug = debug;
             //GSettings.Param = new MParam("srv", "", "", "25", "sdfsd@sfsdf");
-            FRouter router = new FRouter(ConfigFile, RuleName,Par);
+            FRouter router = new FRouter(ConfigFile, RuleName,ref Par);
             router.DoRule();
 
 
