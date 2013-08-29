@@ -96,6 +96,28 @@ namespace fnrouter
         }
 
         /// <summary>
+        /// Добавление значений пердыдущей строки
+        /// </summary>
+        /// <param name="coverWords"></param>
+        public void CoverWords()
+        {
+            foreach (KeyValuePair<string, string> kvp in Par.CoverWords)
+            {
+                if (!ContainsKey(kvp.Key))
+                {
+                    Words.Add(kvp.Key, kvp.Value);
+                }
+
+            }
+            // Rule не задано явно, копируем из section
+            if (!this.ContainsKey("RULE") && !String.IsNullOrEmpty(Par.Section))
+            {
+                this.Words.Add("RULE", Par.Section);
+
+            }
+        }
+
+        /// <summary>
         /// Проверка строки на подстановку переменных. true- все ок, false - переменные не раскрыты
         /// </summary>
         public bool IsVarExpanded(out string Val)

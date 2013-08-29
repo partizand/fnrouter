@@ -76,8 +76,6 @@ namespace fnrouter
                 SetVoid();
                 return;
             }
-            
-            
 
             
 
@@ -115,14 +113,14 @@ namespace fnrouter
                     return;
             }
 
-            
+            LDecoder.CoverWords(); // Получаем параметры предыдущей строки
             
             // Rule не задано явно, копируем из section
-            if (!LDecoder.ContainsKey("RULE") && !String.IsNullOrEmpty(Par.Section))
-            {
-                LDecoder.Words.Add("RULE", Par.Section);
+            //if (!LDecoder.ContainsKey("RULE") && !String.IsNullOrEmpty(Par.Section))
+            //{
+                //LDecoder.Words.Add("RULE", Par.Section);
                 
-            }
+            //}
 
             sValue = LDecoder.GetValue("RULE");
             //sValue = sValue.ToUpper();
@@ -1008,6 +1006,7 @@ namespace fnrouter
         /// </summary>
         void SetVoid()
         {
+            Par.ClearCover();
             _isEmpty = true;
 
             //Rule.Action = TAction.Nothing;

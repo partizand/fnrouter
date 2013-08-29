@@ -33,7 +33,10 @@ namespace fnrouter
         /// Текущая секция
         /// </summary>
         public string Section;
-        
+        /// <summary>
+        /// Перекрываемые параметры строки
+        /// </summary>
+        public Dictionary<string, string> CoverWords;
 
         /// <summary>
         /// Переменные задаваемые пользователем
@@ -47,8 +50,10 @@ namespace fnrouter
         /// Имена параметров для имен файлов
         /// </summary>
         public List<string> FileOptions;
-
-
+        /// <summary>
+        /// Список перекрываемых ключей (действующий на несколько строк)
+        /// </summary>
+        List<string> CoverKeys;
 
         public Params(string iniFile)
         {
@@ -98,8 +103,13 @@ namespace fnrouter
             return newS;
              * */
         }
-
-        
+        /// <summary>
+        /// Очистка всех перекрываемых параметров
+        /// </summary>
+        public void ClearCover()
+        {
+            CoverWords.Clear();
+        }
 
         /// <summary>
         /// Заменяет параметры даты (типа %yymmdd%) в строке S
@@ -288,7 +298,11 @@ namespace fnrouter
             
             FileOptions=new List<string>{"ListFileName","ListFullFileName","FullFileName",
                 "FileName","FileWithoutExt","ExtFile","Nalog"};
-            
+
+            CoverKeys = new List<string> { "S", "Act", "CONTAIN", "Exclude", "INC" };
+
+            CoverWords = new Dictionary<string, string>();
+
             Options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Options.Add("ComputerName", System.Environment.MachineName);
             Options.Add("MachineName", System.Environment.MachineName);
@@ -431,6 +445,25 @@ namespace fnrouter
         {
             ReadMailSet(LDecoder, false);
             ReadParam(LDecoder);
+            FillCoverWords(LDecoder);
+        }
+
+        /// <summary>
+        /// Заполняет перекрываемые значения от текущей строки
+        /// </summary>
+        void FillCoverWords(LineDecoder LDecoder)
+        {
+            foreach (KeyValuePair<string, string> kvp in LDecoder.Words)
+            {
+                foreach (string CoverKey in CoverKeys) // перебираем имена ключей которые нужно копировать
+                {
+                    if (kvp.Key.Equals(CoverKey, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        CoverWords[kvp.Key] = LDecoder.Words[kvp.Key];
+                    }
+                }
+                
+            }
         }
 
         /// <summary>
