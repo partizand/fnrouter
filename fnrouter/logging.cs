@@ -77,6 +77,8 @@ namespace fnrouter
         public LogType LogLevel; 
         
 
+
+
         public Logging(string FolderLog, string Logsubsys, LogType Loglevel)
         {
             string RootFolder = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]); // Каталог запуска программы

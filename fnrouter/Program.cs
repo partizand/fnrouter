@@ -104,9 +104,9 @@ namespace fnrouter
 
         static void ShowHelp()
         {
-            Console.WriteLine("Using: fnrouter.exe [-cfile:имя_файла_с_правилами] -rule:имя_правила [-debug]");
+            Console.WriteLine("Using: fnrouter.exe [-cfile:имя_файла_с_правилами] -rule:имя_правила [-check]");
             Console.WriteLine("Имя файла с правилами по умолчанию fnrouter.ini");
-            Console.WriteLine("-debug Проверка подстановки переменных %% в файле");
+            Console.WriteLine("-check Проверка подстановки переменных %% в файле");
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace fnrouter
                 {
                     RuleName = GetArgValue(arg);
                 }
-                if (arg.Equals("-debug", StringComparison.CurrentCultureIgnoreCase))
+                if (arg.Equals("-check", StringComparison.CurrentCultureIgnoreCase))
                 {
                     debug = true; 
                 }

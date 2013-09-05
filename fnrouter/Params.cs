@@ -1,4 +1,30 @@
-﻿using System;
+﻿/*
+
+ * Copyright 2011 Kapustin Andrey
+
+ * This file is part of Fnrouter.
+
+ * Fnrouter is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+
+ * Fnrouter is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+
+ * You should have received a copy of the GNU General Public License
+ * along with Fnrouter.  If not, see <http://www.gnu.org/licenses/>.
+
+
+ * Код распространяется по лицензии GPL 3
+ * Автор: Капустин Андрей, 2011 г.
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -15,11 +41,23 @@ namespace fnrouter
         /// </summary>
         enum ReplType { All, CurDate, FileName, Option,Undefined };
 
+        /*
         public string MailSrv;
         public string MailUser;
         public string MailPass;
         public string MailPort = "25";
         public string MailFrom;
+        */
+
+        /// <summary>
+        /// Параметры почты
+        /// </summary>
+        public MailParams MailSrv;
+
+        /// <summary>
+        /// Адрес отслыки сообщений об ошибке
+        /// </summary>
+        public string MailToErrors;
         /// <summary>
         /// Режим отладки
         /// </summary>
@@ -73,8 +111,10 @@ namespace fnrouter
         public string ReplStdOptions(string S)
         {
             string newS;
+            
             newS = ReplDate(S);
             newS = ReplUserOptions(newS);
+            
             return newS;
             /*
             string param, newS, strDate;
@@ -149,6 +189,7 @@ namespace fnrouter
                 newS = ReplaceParam(newS, param, Options[param]);
                 param = GetStrVar(newS, ReplType.Option);
             }
+            newS = System.Environment.ExpandEnvironmentVariables(newS);
             return newS;
         }
 
@@ -261,12 +302,13 @@ namespace fnrouter
             IniFile ini = new IniFile();
             ini.Load(iniFile);
             // Чтение настроек почты
-            MailSrv = ini.GetKeyValue("Mail", "MailSrv");
-            MailUser = ini.GetKeyValue("Mail", "MailUser");
-            MailPass = ini.GetKeyValue("Mail", "MailPass");
-            MailPort = ini.GetKeyValue("Mail", "MailPort");
-            if (String.IsNullOrEmpty(MailPort)) MailPort = "25";
-            MailFrom = ini.GetKeyValue("Mail", "MailFrom");
+            MailSrv.MailSrv = ini.GetKeyValue("Mail", "MailSrv");
+            MailSrv.MailUser = ini.GetKeyValue("Mail", "MailUser");
+            MailSrv.MailPass = ini.GetKeyValue("Mail", "MailPass");
+            MailSrv.SetPort(ini.GetKeyValue("Mail", "MailPort"));
+            MailSrv.MailFrom = ini.GetKeyValue("Mail", "MailFrom");
+
+            MailToErrors = ini.GetKeyValue("Mail", "MailToErrors");
 
             // Чтение переменных
             IniFile.IniSection OptSect = ini.GetSection("Vars");
@@ -284,6 +326,7 @@ namespace fnrouter
         /// </summary>
         void FillStdOptions()
         {
+            MailSrv = new MailParams();
             DateOptions = new List<string> { "d", "dd" ,"ddd","dddd",
                 "f","ff","fff","ffff","fffff","ffffff",
             "F","FF","FFF","FFFF","FFFFF","FFFFFF","FFFFFFF","g", "gg",
@@ -307,6 +350,17 @@ namespace fnrouter
             Options.Add("ComputerName", System.Environment.MachineName);
             Options.Add("MachineName", System.Environment.MachineName);
             Options.Add("UserName", System.Environment.UserName);
+            Options.Add("NewLine", Environment.NewLine);
+            // Добавление спец каталогов
+            string[] FoldNames = Enum.GetNames(typeof(Environment.SpecialFolder));
+            Environment.SpecialFolder enName;
+            
+            foreach (string foldName in FoldNames)
+            {
+                enName = (Environment.SpecialFolder)Enum.Parse(typeof(Environment.SpecialFolder), foldName);
+                Options.Add(foldName, Environment.GetFolderPath(enName));
+            }
+                 
 
         }
         /// <summary>
@@ -535,41 +589,37 @@ namespace fnrouter
         {
             string sValue;
             sValue = LDecoder.GetValue("MAILSRV");
-            if (ReadEmpty) this.MailSrv = sValue;
+            if (ReadEmpty) this.MailSrv.MailSrv = sValue;
             else
             {
                 if (!String.IsNullOrEmpty(sValue))
-                    this.MailSrv = sValue;
+                    this.MailSrv.MailSrv = sValue;
             }
             sValue = LDecoder.GetValue("MAILFROM");
-            if (ReadEmpty) this.MailFrom = sValue;
+            if (ReadEmpty) this.MailSrv.MailFrom = sValue;
             else
             {
                 if (!String.IsNullOrEmpty(sValue))
-                    this.MailFrom = sValue;
+                    this.MailSrv.MailFrom = sValue;
             }
 
 
             sValue = LDecoder.GetValue("MAILPORT");
-            if (ReadEmpty) this.MailPort = sValue;
-            else
-            {
-                if (!String.IsNullOrEmpty(sValue))
-                    this.MailPort = sValue;
-            }
+            if (ReadEmpty) MailSrv.SetPort(sValue);
+            
             sValue = LDecoder.GetValue("MAILUSER");
-            if (ReadEmpty) this.MailUser = sValue;
+            if (ReadEmpty) this.MailSrv.MailUser = sValue;
             else
             {
                 if (!String.IsNullOrEmpty(sValue))
-                    this.MailUser = sValue;
+                    this.MailSrv.MailUser = sValue;
             }
             sValue = LDecoder.GetValue("MAILPASS");
-            if (ReadEmpty) this.MailPass = sValue;
+            if (ReadEmpty) this.MailSrv.MailPass = sValue;
             else
             {
                 if (!String.IsNullOrEmpty(sValue))
-                    this.MailPass = sValue;
+                    this.MailSrv.MailPass = sValue;
             }
 
         }

@@ -70,6 +70,7 @@ namespace fnrouter
             Rule = new RuleRow();
             _isEmpty = false;
             Log = log;
+
             // Разбор строки
             if (LDecoder.NumKeys == 0) // Строка пуста
             {
@@ -653,7 +654,7 @@ namespace fnrouter
                 {
                     tSubj = Par.ReplFile(Subj, sfile, Rule.SFiles);
                     tMsg = Par.ReplFile(Msg, sfile, Rule.SFiles);
-                    if (SendMail(MailTo, tSubj, tMsg, sfile))
+                    if (MailUtil.SendMail(Par.MailSrv, MailTo, tSubj, tMsg, sfile,Log))
                     {
                         Log.LogMessage(LogType.Info, "Файл отправлен по почте " + sfile + " для " + MailTo);
                     }
@@ -663,7 +664,7 @@ namespace fnrouter
             {
                 Subj = Par.ReplFile(Subj, "", Rule.SFiles);
                 Msg = Par.ReplFile(Msg, "", Rule.SFiles);
-                if (SendMail(MailTo, Subj, Msg, ""))
+                if (MailUtil.SendMail(Par.MailSrv,MailTo, Subj, Msg, "",Log))
                 {
                     Log.LogMessage(LogType.Info, "Сообщение о файле(ах) отправлено по почте " + Par.GetFileListStr(Rule.SFiles, true) + " для " + MailTo);
                 }
@@ -730,7 +731,7 @@ namespace fnrouter
             return true;
         }
         
-
+        /*
         /// <summary>
         /// Отправка письма с вложением
         /// </summary>
@@ -809,7 +810,7 @@ namespace fnrouter
             }
             return ret;
         }
-        
+        */
         
         //-------------------------------------------------------------------------------------------------
         /// <summary>
@@ -818,7 +819,7 @@ namespace fnrouter
         /// <param name="DirName"></param>
         /// <param name="Log"></param>
         /// <returns></returns>
-        public static bool DirectoryCreateEx(string DirName, Logging Log)
+        public bool DirectoryCreateEx(string DirName, Logging Log)
         {
             if (Directory.Exists(DirName)) return true;
             try
@@ -828,14 +829,15 @@ namespace fnrouter
             }
             catch (Exception E)
             {
-
-                if (Log != null) Log.LogMessage(LogType.Error, "Ошибка создания каталога " + DirName + ". " + E.Message);
+                string msg = "Ошибка создания каталога " + DirName + ". " + E.Message;
+                //LogError(msg);
+                if (Log != null) Log.LogMessage(LogType.Error, msg);
                 return false;
             }
 
         }
         //-------------------------------------------------------------------------------------------------
-        static FileStream FileCreateEx(string FileName, Logging Log)
+         FileStream FileCreateEx(string FileName, Logging Log)
         {
             string Dir = Path.GetDirectoryName(FileName);
             DirectoryCreateEx(Dir, Log);
@@ -847,6 +849,7 @@ namespace fnrouter
             catch (Exception E)
             {
 
+                
                 if (Log != null) Log.LogMessage(LogType.Error, "Ошибка создания файла " + FileName + ". " + E.Message);
                 return null;
             }
@@ -860,7 +863,7 @@ namespace fnrouter
         /// <param name="FileNameTo"></param>
         /// <param name="Log">Может быть null</param>
         /// <returns></returns>
-        public static bool FileCopyEx(string FileNameFrom, string FileNameTo, Logging Log)
+        public  bool FileCopyEx(string FileNameFrom, string FileNameTo, Logging Log)
         {
             try
             {
@@ -869,8 +872,10 @@ namespace fnrouter
             }
             catch (Exception E)
             {
-
-                if (Log != null) Log.LogMessage(LogType.Error, "Ошибка копирования файла " + FileNameFrom + " в " + FileNameTo + ". " + E.Message);
+                string msg = "Ошибка копирования файла " + FileNameFrom + " в " + FileNameTo + ". " + E.Message;
+                LogError(msg);
+                //if (Log != null) Log.LogMessage(LogType.Error, "Ошибка копирования файла " + FileNameFrom + " в " + FileNameTo + ". " + E.Message);
+                //if (Par.MailToErrors != String.Empty) SendMail(Par.MailToErrors, "fnerror", "Copy error", null);
                 return false;
             }
 
@@ -882,7 +887,7 @@ namespace fnrouter
         /// <param name="FileNameTo"></param>
         /// <param name="Log"></param>
         /// <returns></returns>
-        public static bool FileMoveEx(string FileNameFrom, string FileNameTo, Logging Log)
+        public  bool FileMoveEx(string FileNameFrom, string FileNameTo, Logging Log)
         {
             string NewFileNameTo = FileNameTo;
             try
@@ -893,10 +898,17 @@ namespace fnrouter
             }
             catch (Exception E)
             {
-                if (Log != null) Log.LogMessage(LogType.Error, "Ошибка перемещения файла " + FileNameFrom + " в " + FileNameTo + ". " + E.Message);
+                string msg = "Ошибка перемещения файла " + FileNameFrom + " в " + FileNameTo + ". " + E.Message;
+                LogError(msg);
+                //if (Log != null) Log.LogMessage(LogType.Error, "Ошибка перемещения файла " + FileNameFrom + " в " + FileNameTo + ". " + E.Message);
                 return false;
             }
 
+        }
+        void LogError(string Msg)
+        {
+            if (Log != null) Log.LogMessage(LogType.Error, Msg);
+            if (Par.MailToErrors != String.Empty) MailUtil.SendMail (Par.MailSrv, Par.MailToErrors, "fnerror", Msg, null,null);
         }
 
         //------------------------------------------------------------------------------
