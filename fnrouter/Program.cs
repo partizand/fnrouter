@@ -93,6 +93,9 @@ namespace fnrouter
             if (!debug) Console.WriteLine("Запуск правила " + RuleName+" из файла "+ConfigFile);
             else Console.WriteLine("Проверка файла " + ConfigFile);
 
+            string ProgDir=Path.GetDirectoryName(Environment.CommandLine); // По умолчанию в каталоге с программой
+            ConfigFile = Path.Combine(ProgDir, ConfigFile);
+
             Par = new Params(ConfigFile);
             Par.Debug = debug;
             //GSettings.Param = new MParam("srv", "", "", "25", "sdfsd@sfsdf");
