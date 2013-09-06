@@ -101,13 +101,16 @@ namespace fnrouter
         /// <param name="coverWords"></param>
         public void CoverWords()
         {
-            foreach (KeyValuePair<string, string> kvp in Par.CoverWords)
+            if (!ContainsKey("S")) // Строка не содержит параметр S
             {
-                if (!ContainsKey(kvp.Key))
+                foreach (KeyValuePair<string, string> kvp in Par.CoverWords)
                 {
-                    Words.Add(kvp.Key, kvp.Value);
-                }
+                    if (!ContainsKey(kvp.Key))
+                    {
+                        Words.Add(kvp.Key, kvp.Value);
+                    }
 
+                }
             }
             // Rule не задано явно, копируем из section
             if (!this.ContainsKey("RULE") && !String.IsNullOrEmpty(Par.Section))
