@@ -60,17 +60,32 @@ namespace fnrouter
             Console.WriteLine("fnrouter v. "+ver.ToString());
             
             ReadArgs(args);
+            
+            /*
+            //Trace.WriteLine("Environment.CommandLine=" + Environment.CommandLine);
+            Console.WriteLine("Environment.CommandLine=" + Environment.CommandLine);
+            string ProgDir = Path.GetDirectoryName(Environment.CommandLine); // По умолчанию в каталоге с программой
+            Trace.WriteLine("ProgDir=" + ProgDir);
+            //Console.WriteLine("ProgDir=" + ConfigFile);
+            ConfigFile = Path.Combine(ProgDir, ConfigFile);
+            */
 
+            // каталог логов
+            string RootFolder; // Каталог запуска программы
+            RootFolder = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
 
+            ConfigFile = Path.Combine(RootFolder, ConfigFile);
 
-            if (!File.Exists(ConfigFile))
-            {
-                Console.WriteLine("Не найден файл с правилами: "+ConfigFile);
-                return;
-            }
+            
             if (String.IsNullOrEmpty(RuleName) && !debug) // Не задано правило
             {
                 ShowHelp();
+                return;
+            }
+
+            if (!File.Exists(ConfigFile))
+            {
+                Console.WriteLine("Не найден файл с правилами: " + ConfigFile);
                 return;
             }
 
@@ -93,9 +108,7 @@ namespace fnrouter
             if (!debug) Console.WriteLine("Запуск правила " + RuleName+" из файла "+ConfigFile);
             else Console.WriteLine("Проверка файла " + ConfigFile);
 
-            string ProgDir=Path.GetDirectoryName(Environment.CommandLine); // По умолчанию в каталоге с программой
-            ConfigFile = Path.Combine(ProgDir, ConfigFile);
-
+            
             Par = new Params(ConfigFile);
             Par.Debug = debug;
             //GSettings.Param = new MParam("srv", "", "", "25", "sdfsd@sfsdf");
