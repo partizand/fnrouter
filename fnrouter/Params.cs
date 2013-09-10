@@ -561,7 +561,8 @@ namespace fnrouter
                 {
                     if (Options[key].Contains("%"))
                     {
-                        Options[key] = ReplUserOptions(Options[key]);
+                        //Options[key] = ReplUserOptions(Options[key]);
+                        Options[key] = ReplStdOptions(Options[key]);
                         contains = true;
                     }
                 }
