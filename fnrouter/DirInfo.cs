@@ -25,7 +25,16 @@ namespace fnrouter
 
         public char[] Separator; // Разделитель масок
 
-        public string Contain; // Файл содержит эту строку
+        /// <summary>
+        /// Файл должен содержать любую из этих строк
+        /// </summary>
+        string[] _Contain; // Файл содержит эту строку
+
+        /// <summary>
+        /// Файл не должен содержать ни одной из этих строк
+        /// </summary>
+        string[] _NOTContain;
+
 
         /// <summary>
         /// Создание объекта класса. Для одной маски вклчения допустимо ее укзать в sPath. -> DirInfo("c:\test\*","","")
@@ -52,13 +61,15 @@ namespace fnrouter
             }
 
             SetMask(Include, Exclude);
+            
 
         }
 
         public DirInfo(string sPath, string Include, string Exclude, string contain):
             this(sPath,Include,Exclude)
         {
-            Contain = contain;
+            this._Contain = contain.Split('|');
+            
         }
 
         /// <summary>
@@ -96,7 +107,7 @@ namespace fnrouter
             {
                 if (checkRange(fi.Name))
                 {
-                    if (IsContain(fi.FullName,Contain)) LFiles.Add(fi.FullName);
+                    if (IsContain(fi.FullName)) LFiles.Add(fi.FullName);
                 }
             }
 
@@ -179,19 +190,27 @@ namespace fnrouter
         /// <param name="fi"></param>
         /// <param name="contain"></param>
         /// <returns></returns>
-        bool IsContain(string FileName, string contain)
+        bool IsContain(string FileName)
         {
-            if (String.IsNullOrEmpty(contain)) return true;
-            string Content = "";
+            if (this._Contain==null) return true; // Список строк пуст
+            if (this._Contain.Length==0) return true;
+            string Content;
             try
             {
                 Content = File.ReadAllText(FileName, Encoding.GetEncoding(1251));
+                foreach (string cont in this._Contain) // Ищем вхождение строк в содержимом файла
+                {
+                    if (Content.Contains(cont)) return true;
+                }
             }
             catch
             {
 
             }
-            return Content.Contains(contain);
+            
+            
+            
+            return false;
         }
     }
 }
