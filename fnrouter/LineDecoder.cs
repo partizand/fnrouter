@@ -96,13 +96,15 @@ namespace fnrouter
         }
 
         /// <summary>
-        /// Добавление значений пердыдущей строки
+        /// Добавление значений пердыдущей строки. Возвращает true если идет наследование
         /// </summary>
         /// <param name="coverWords"></param>
-        public void CoverWords()
+        public bool CoverWords()
         {
+            bool inherit = false;
             if (!ContainsKey("S")) // Строка не содержит параметр S
             {
+                inherit = true;
                 foreach (KeyValuePair<string, string> kvp in Par.CoverWords)
                 {
                     if (!ContainsKey(kvp.Key))
@@ -118,6 +120,7 @@ namespace fnrouter
                 this.Words.Add("RULE", Par.Section);
 
             }
+            return inherit;
         }
 
         /// <summary>

@@ -46,6 +46,11 @@ namespace fnrouter
 
         public RuleRow Rule;
 
+        /// <summary>
+        /// Наследуются ли файлы
+        /// </summary>
+        bool inherit;
+
         Logging Log;
         /// <summary>
         /// Настройки для текущего правила
@@ -114,7 +119,7 @@ namespace fnrouter
                     return;
             }
 
-            LDecoder.CoverWords(); // Получаем параметры предыдущей строки
+            inherit=LDecoder.CoverWords(); // Получаем параметры предыдущей строки
             
             // Rule не задано явно, копируем из section
             //if (!LDecoder.ContainsKey("RULE") && !String.IsNullOrEmpty(Par.Section))
@@ -1031,7 +1036,15 @@ namespace fnrouter
         {
             if (!_isEmpty)
             {
-                FillSFiles();
+                if (!inherit) // Нет наследования, составляем список файлов
+                {
+                    FillSFiles();
+                    Par.SaveSFiles(Rule.SFiles);
+                }
+                else // Есть наследование, берем готовый список файлов
+                {
+                    Rule.SFiles = new List<string>(Par.SFiles);
+                }
                 FillDFiles();
             }
         }

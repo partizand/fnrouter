@@ -75,7 +75,15 @@ namespace fnrouter
         /// Перекрываемые параметры строки
         /// </summary>
         public Dictionary<string, string> CoverWords;
+        /// <summary>
+        /// Наследуемые файлы
+        /// </summary>
+        public List<string> SFiles
+        {
+        get {return _sFiles;}
+        }
 
+        private List<string> _sFiles;
         /// <summary>
         /// Переменные задаваемые пользователем
         /// </summary>
@@ -342,7 +350,8 @@ namespace fnrouter
             FileOptions=new List<string>{"ListFileName","ListFullFileName","FullFileName",
                 "FileName","FileWithoutExt","ExtFile","Nalog"};
 
-            CoverKeys = new List<string> { "S", "Act", "CONTAIN", "Exclude", "INC" };
+            //CoverKeys = new List<string> { "S", "Act", "CONTAIN", "Exclude", "INC" };
+            CoverKeys = new List<string> { "S",  "CONTAIN", "Exclude", "INC" };
 
             CoverWords = new Dictionary<string, string>();
 
@@ -518,6 +527,13 @@ namespace fnrouter
                 }
                 
             }
+            
+            
+        }
+
+        public void SaveSFiles(List<string> sFiles)
+        {
+            this._sFiles = new List<string>(sFiles);
         }
 
         /// <summary>
