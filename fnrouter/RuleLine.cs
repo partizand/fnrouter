@@ -1058,6 +1058,7 @@ namespace fnrouter
             Rule.Source = LDecoder.GetValue("S");
             //Rule.Source = ReplaceVar.ReplDate(Rule.Source); // Подстановка текущих даты времени
             Rule.Contain = LDecoder.GetValue("CONTAIN");
+            Rule.NOTContain = LDecoder.GetValue("NOTCONTAIN");
             if (String.IsNullOrEmpty(Rule.Source)) return;
             if (Rule.Action == TAction.MoveNalogDir) return; // Перемещение каталога налоговой, файлов нет
 
@@ -1069,7 +1070,7 @@ namespace fnrouter
             string Exclude = LDecoder.GetValue("EXCLUDE"); // Исключаемые маски
             string Include = LDecoder.GetValue("INC"); // Включаемые маски
 
-            DirInfo di = new DirInfo(Rule.Source, Include, Exclude, Rule.Contain);
+            DirInfo di = new DirInfo(Rule.Source, Include, Exclude, Rule.Contain, Rule.NOTContain);
             Rule.SFiles = di.GetFiles();
             
         }

@@ -65,11 +65,12 @@ namespace fnrouter
 
         }
 
-        public DirInfo(string sPath, string Include, string Exclude, string contain):
+        public DirInfo(string sPath, string Include, string Exclude, string contain, string notContain):
             this(sPath,Include,Exclude)
         {
-            this._Contain = contain.Split('|');
-            
+
+            if (!String.IsNullOrEmpty(contain)) this._Contain = contain.Split('|');
+            if (!String.IsNullOrEmpty(notContain)) this._NOTContain = notContain.Split('|');
         }
 
         /// <summary>
@@ -107,7 +108,7 @@ namespace fnrouter
             {
                 if (checkRange(fi.Name))
                 {
-                    if (IsContain(fi.FullName)) LFiles.Add(fi.FullName);
+                    if (IsContain(fi.FullName) && IsNOTContain(fi.FullName)) LFiles.Add(fi.FullName);
                 }
             }
 
@@ -185,7 +186,7 @@ namespace fnrouter
 
         }
         /// <summary>
-        /// Содержится ли файле fi строка contain, если contain="" то всегда возвращается true
+        /// Содержится ли файле fi строки _Сontain, если contain="" то всегда возвращается true
         /// </summary>
         /// <param name="fi"></param>
         /// <param name="contain"></param>
@@ -211,6 +212,35 @@ namespace fnrouter
             
             
             return false;
+        }
+        
+        /// <summary>
+        /// Файл не содержит строки из NotContain (Подходит ли файл для обработки). Если NotContain пуст - возвращает true
+        /// </summary>
+        /// <param name="FileName"></param>
+        /// <returns></returns>
+        bool IsNOTContain(string FileName)
+        {
+            if (this._NOTContain == null) return true; // Список строк пуст
+            if (this._NOTContain.Length == 0) return true;
+            string Content;
+            try
+            {
+                Content = File.ReadAllText(FileName, Encoding.GetEncoding(1251));
+                //bool notCont = true;
+                foreach (string cont in this._NOTContain) // Ищем вхождение строк в содержимом файла
+                {
+                    if (Content.Contains(cont)) return false;
+                }
+            }
+            catch
+            {
+
+            }
+
+
+
+            return true;
         }
     }
 }

@@ -51,9 +51,13 @@ namespace fnrouter
         /// </summary>
         //public string SourceMask;
         /// <summary>
-        /// Исходный файл должен содержать строку
+        /// Исходный файл должен содержать строки, разделенные |
         /// </summary>
         public string Contain;
+        /// <summary>
+        /// Исходный файл не должен содержать строки, разделенные |
+        /// </summary>
+        public string NOTContain;
         /// <summary>
         /// Каталог приемник
         /// </summary>
