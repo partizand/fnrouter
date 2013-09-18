@@ -35,6 +35,12 @@ namespace fnrouter
         /// </summary>
         string[] _NOTContain;
 
+        /// <summary>
+        /// Список файлов
+        /// </summary>
+        //List<string> LFiles;
+
+        FileInfo[] Files;
 
         /// <summary>
         /// Создание объекта класса. Для одной маски вклчения допустимо ее укзать в sPath. -> DirInfo("c:\test\*","","")
@@ -48,7 +54,8 @@ namespace fnrouter
         public DirInfo(string sPath, string Include, string Exclude)
         {
             Separator = new char[3] { ',', '|', ';' };;
-            if (String.IsNullOrEmpty(Include)) // Включаемая маска одна и укзана в Path
+
+            if (String.IsNullOrEmpty(Include) && !String.IsNullOrEmpty(sPath)) // Включаемая маска одна и укзана в Path и он не пуст
             {
                 SourceDir = Path.GetDirectoryName(sPath);
                 Include = Path.GetFileName(sPath);
@@ -74,6 +81,28 @@ namespace fnrouter
         }
 
         /// <summary>
+        /// Создание объекта передачей списка файлов. Указанные файлы фильтруются по доп признакам
+        /// </summary>
+        /// <param name="files"></param>
+        /// <param name="Include"></param>
+        /// <param name="Exclude"></param>
+        /// <param name="contain"></param>
+        /// <param name="notContain"></param>
+        public DirInfo(List<string> files, string Include, string Exclude, string contain, string notContain):
+            this("",Include,Exclude,contain,notContain)
+        {
+            //LFiles = new List<string>(files);
+            int l = files.Count;
+            int i;
+            Files = new FileInfo[l];
+            for (i=0;i<l;++i)
+            {
+                Files[i] = new FileInfo(files[i]);
+            }
+            
+        }
+
+        /// <summary>
         /// Установить список включаемых и исключаемых масок
         /// </summary>
         /// <param name="Include"></param>
@@ -93,16 +122,16 @@ namespace fnrouter
         public List<string> GetFiles()
         {
             List<string> LFiles = new List<string>(); 
-            if (String.IsNullOrEmpty(SourceDir)) return LFiles;
-             if (!Directory.Exists(SourceDir)) return LFiles;
-
             
+            if (String.IsNullOrEmpty(SourceDir) && Files==null) return LFiles;
 
-            DirectoryInfo di = new DirectoryInfo(SourceDir);
+            if (Files == null)
+            {
+                if (!Directory.Exists(SourceDir)) return LFiles;
+                DirectoryInfo di = new DirectoryInfo(SourceDir);
+                Files = di.GetFiles();
+            }
             
-            
-            FileInfo[] Files = di.GetFiles();
-
             // Перебираем все файлы в каталоге
             foreach (FileInfo fi in Files)
             {
