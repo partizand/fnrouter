@@ -1023,7 +1023,7 @@ namespace fnrouter
         /// </summary>
         void SetVoid()
         {
-            Par.ClearCover();
+            //Par.ClearCover();
             _isEmpty = true;
 
             //Rule.Action = TAction.Nothing;
@@ -1036,15 +1036,15 @@ namespace fnrouter
         {
             if (!_isEmpty)
             {
+                FillSFiles();
+                
                 if (!inherit) // Нет наследования, составляем список файлов
                 {
-                    FillSFiles();
+                    
                     Par.SaveSFiles(Rule.SFiles);
                 }
-                else // Есть наследование, берем готовый список файлов
-                {
-                    Rule.SFiles = new List<string>(Par.SFiles);
-                }
+                
+                
                 FillDFiles();
             }
         }
@@ -1059,7 +1059,7 @@ namespace fnrouter
             //Rule.Source = ReplaceVar.ReplDate(Rule.Source); // Подстановка текущих даты времени
             Rule.Contain = LDecoder.GetValue("CONTAIN");
             Rule.NOTContain = LDecoder.GetValue("NOTCONTAIN");
-            if (String.IsNullOrEmpty(Rule.Source)) return;
+            if (String.IsNullOrEmpty(Rule.Source) && !inherit) return;
             if (Rule.Action == TAction.MoveNalogDir) return; // Перемещение каталога налоговой, файлов нет
 
             //Rule.SourceDir = Path.GetDirectoryName(Rule.Source);
@@ -1069,8 +1069,16 @@ namespace fnrouter
             
             string Exclude = LDecoder.GetValue("EXCLUDE"); // Исключаемые маски
             string Include = LDecoder.GetValue("INC"); // Включаемые маски
+            DirInfo di;
+            if (inherit) // Наследование
+            {
+                di = new DirInfo(Par.SFiles, Include, Exclude, Rule.Contain, Rule.NOTContain);
+            }
+            else // Нет наследования
+            {
 
-            DirInfo di = new DirInfo(Rule.Source, Include, Exclude, Rule.Contain, Rule.NOTContain);
+                di = new DirInfo(Rule.Source, Include, Exclude, Rule.Contain, Rule.NOTContain);
+            }
             Rule.SFiles = di.GetFiles();
             
         }

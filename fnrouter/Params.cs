@@ -74,7 +74,7 @@ namespace fnrouter
         /// <summary>
         /// Перекрываемые параметры строки
         /// </summary>
-        public Dictionary<string, string> CoverWords;
+        //public Dictionary<string, string> CoverWords;
         /// <summary>
         /// Наследуемые файлы
         /// </summary>
@@ -99,7 +99,7 @@ namespace fnrouter
         /// <summary>
         /// Список перекрываемых ключей (действующий на несколько строк)
         /// </summary>
-        List<string> CoverKeys;
+        //List<string> CoverKeys;
 
         public Params(string iniFile)
         {
@@ -154,11 +154,12 @@ namespace fnrouter
         /// <summary>
         /// Очистка всех перекрываемых параметров
         /// </summary>
+        /*
         public void ClearCover()
         {
             CoverWords.Clear();
         }
-
+        */
         /// <summary>
         /// Заменяет параметры даты (типа %yymmdd%) в строке S
         /// </summary>
@@ -351,9 +352,12 @@ namespace fnrouter
                 "FileName","FileWithoutExt","ExtFile","Nalog"};
 
             //CoverKeys = new List<string> { "S", "Act", "CONTAIN", "Exclude", "INC" };
-            CoverKeys = new List<string> { "S",  "CONTAIN", "Exclude", "INC" };
+            
+            //CoverKeys = new List<string> { "S",  "CONTAIN", "Exclude", "INC" };
+            
+            //CoverKeys = new List<string> { "S" };
 
-            CoverWords = new Dictionary<string, string>();
+            //CoverWords = new Dictionary<string, string>();
 
             Options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Options.Add("ComputerName", System.Environment.MachineName);
@@ -508,12 +512,13 @@ namespace fnrouter
         {
             ReadMailSet(LDecoder, false);
             ReadParam(LDecoder);
-            FillCoverWords(LDecoder);
+            //FillCoverWords(LDecoder);
         }
 
         /// <summary>
         /// Заполняет перекрываемые значения от текущей строки
         /// </summary>
+        /*
         void FillCoverWords(LineDecoder LDecoder)
         {
             foreach (KeyValuePair<string, string> kvp in LDecoder.Words)
@@ -530,6 +535,7 @@ namespace fnrouter
             
             
         }
+        */
 
         public void SaveSFiles(List<string> sFiles)
         {

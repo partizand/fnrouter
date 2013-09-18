@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
+//using System.Runtime.CompilerServices;
+
+//[assembly: InternalsVisibleTo("DirInfoTest")]
+//[assembly: InternalsVisibleTo("fnrouterTest")]
 
 namespace fnrouter
 {
@@ -66,6 +70,9 @@ namespace fnrouter
                 SourceDir = sPath;
 
             }
+
+            // Если передается список файлов и Include пусто, то ставим его *
+            if (String.IsNullOrEmpty(sPath) && String.IsNullOrEmpty(Include)) Include = "*";
 
             SetMask(Include, Exclude);
             

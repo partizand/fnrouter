@@ -105,6 +105,8 @@ namespace fnrouter
             if (!ContainsKey("S")) // Строка не содержит параметр S
             {
                 inherit = true;
+                
+                /*
                 foreach (KeyValuePair<string, string> kvp in Par.CoverWords)
                 {
                     if (!ContainsKey(kvp.Key))
@@ -113,6 +115,7 @@ namespace fnrouter
                     }
 
                 }
+                 */ 
             }
             // Rule не задано явно, копируем из section
             if (!this.ContainsKey("RULE") && !String.IsNullOrEmpty(Par.Section))
