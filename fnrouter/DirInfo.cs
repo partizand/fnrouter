@@ -99,6 +99,10 @@ namespace fnrouter
             this("",Include,Exclude,contain,notContain)
         {
             //LFiles = new List<string>(files);
+            if (files == null) // список файлов пуст
+            {
+                return;
+            }
             int l = files.Count;
             int i;
             Files = new FileInfo[l];

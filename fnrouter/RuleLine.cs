@@ -195,6 +195,9 @@ namespace fnrouter
                 case "MERGENALOGFILE":
                     Rule.Action = TAction.MergeNalogFile;
                     break;
+                case "NOTHING":
+                    Rule.Action = TAction.Nothing;
+                    break;
                 default:
                     SetVoid();
                     return;
@@ -253,6 +256,11 @@ namespace fnrouter
                 case TAction.MergeNalogFile:
                     ActMergeNalogFile();
                     break;
+                case TAction.Nothing:
+                    return;
+                default:
+                    SetVoid();
+                    return;
 
             }
         }
