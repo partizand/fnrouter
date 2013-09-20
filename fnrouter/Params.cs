@@ -364,6 +364,13 @@ namespace fnrouter
             Options.Add("MachineName", System.Environment.MachineName);
             Options.Add("UserName", System.Environment.UserName);
             Options.Add("NewLine", Environment.NewLine);
+            // Каталог программы
+            string RootFolder; // Каталог запуска программы
+            RootFolder = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
+            Options.Add("FNRouterDir", RootFolder);
+            RootFolder = Path.Combine(RootFolder, "tmp");
+            Options.Add("FNRouterTempDir", RootFolder);
+
             // Добавление спец каталогов
             string[] FoldNames = Enum.GetNames(typeof(Environment.SpecialFolder));
             Environment.SpecialFolder enName;
