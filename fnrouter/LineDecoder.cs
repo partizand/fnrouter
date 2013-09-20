@@ -65,14 +65,26 @@ namespace fnrouter
         /// <summary>
         /// Список ключей и параметров
         /// </summary>
-        public Dictionary<string, string> Words;
+        private Dictionary<string, string> Words;
+
+        /// <summary>
+        /// У строки наследуемый источник
+        /// </summary>
+        public bool inherit
+        {
+            get { return _inherit; }
+        }
+        private bool _inherit;
 
         public LineDecoder(string Line, Params param)
         {
             Par = param;
-            Words = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase); // Регистронезависимое сравнение
+            this.Words = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase); // Регистронезависимое сравнение
             LineStr = Line;
+            this._inherit = false;
             DecodeLine();
+            SetRuleName();
+            SetInherit();
         }
         /// <summary>
         /// Возвращает значение ключа по его имени (регистр имени ключа не важен)
@@ -81,7 +93,7 @@ namespace fnrouter
         /// <returns></returns>
         public string GetValue(string KeyName)
         {
-            if (Words.ContainsKey(KeyName)) return Words[KeyName];
+            if (this.Words.ContainsKey(KeyName)) return this.Words[KeyName];
             return "";
             
             //int i=Keys.FindIndex (Key=>Key.Equals(KeyName,StringComparison.CurrentCultureIgnoreCase)); // Индекс ключа
@@ -92,13 +104,14 @@ namespace fnrouter
 
         public bool ContainsKey(string KeyName)
         {
-            return Words.ContainsKey(KeyName);
+            return this.Words.ContainsKey(KeyName);
         }
 
         /// <summary>
         /// Добавление значений пердыдущей строки. Возвращает true если идет наследование
         /// </summary>
         /// <param name="coverWords"></param>
+        /*
         public bool CoverWords()
         {
             bool inherit = false;
@@ -106,24 +119,45 @@ namespace fnrouter
             {
                 inherit = true;
                 
-                /*
-                foreach (KeyValuePair<string, string> kvp in Par.CoverWords)
-                {
-                    if (!ContainsKey(kvp.Key))
-                    {
-                        Words.Add(kvp.Key, kvp.Value);
-                    }
+                
+                //foreach (KeyValuePair<string, string> kvp in Par.CoverWords)
+                //{
+                //    if (!ContainsKey(kvp.Key))
+                //    {
+                //        Words.Add(kvp.Key, kvp.Value);
+                //    }
 
-                }
-                 */ 
+                //}
+                  
             }
+            // Rule не задано явно, копируем из section
+            SetRuleName();
+            return inherit;
+        }
+        */
+        /// <summary>
+        /// Установка имени правила (из секции или напрямую)
+        /// </summary>
+        void SetRuleName()
+        {
             // Rule не задано явно, копируем из section
             if (!this.ContainsKey("RULE") && !String.IsNullOrEmpty(Par.Section))
             {
                 this.Words.Add("RULE", Par.Section);
 
             }
-            return inherit;
+        }
+        void SetInherit()
+        {
+            string S=this.GetValue("S");
+            if (S.Equals("$", StringComparison.CurrentCultureIgnoreCase))
+            {
+                _inherit = true;
+            }
+            else
+            {
+                _inherit = false;
+            }
         }
 
         /// <summary>
@@ -205,6 +239,7 @@ namespace fnrouter
                     break;
                 }
             }
+            //SetRuleName();
         }
     }
 }

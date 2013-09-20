@@ -42,9 +42,11 @@ namespace fnrouter
         /// <summary>
         /// Список файлов
         /// </summary>
+        List<FileInfo> Files;
         //List<string> LFiles;
 
-        FileInfo[] Files;
+        //FileInfo[] Files;
+
 
         /// <summary>
         /// Создание объекта класса. Для одной маски вклчения допустимо ее укзать в sPath. -> DirInfo("c:\test\*","","")
@@ -103,13 +105,19 @@ namespace fnrouter
             {
                 return;
             }
-            int l = files.Count;
-            int i;
-            Files = new FileInfo[l];
-            for (i=0;i<l;++i)
+            //int l = files.Count;
+            //int i;
+            Files = new List<FileInfo>();
+            foreach (string fi in files)
             {
-                Files[i] = new FileInfo(files[i]);
+                if (File.Exists(fi))
+                {
+                    Files.Add(new FileInfo(fi));
+                }
             }
+            
+            //List<FileInfo> test = new List<FileInfo>(Files);
+            
             
         }
 
@@ -140,7 +148,8 @@ namespace fnrouter
             {
                 if (!Directory.Exists(SourceDir)) return LFiles;
                 DirectoryInfo di = new DirectoryInfo(SourceDir);
-                Files = di.GetFiles();
+                FileInfo[] fili = di.GetFiles();
+                Files = new List<FileInfo>(fili);
             }
             
             // Перебираем все файлы в каталоге

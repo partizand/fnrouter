@@ -511,7 +511,7 @@ namespace fnrouter
         public void ReadLine(LineDecoder LDecoder)
         {
             ReadMailSet(LDecoder, false);
-            ReadParam(LDecoder);
+            //ReadParam(LDecoder);
             //FillCoverWords(LDecoder);
         }
 
@@ -546,6 +546,7 @@ namespace fnrouter
         /// Чтение переменных пользователя в строке
         /// </summary>
         /// <param name="LDecoder"></param>
+        /*
         private void ReadParam(LineDecoder LDecoder)
         {
             string[] sValue;
@@ -563,6 +564,7 @@ namespace fnrouter
             ExpandOptions();
             
         }
+        */
         /// <summary>
         /// Заменяет в переменных на значения других переменных
         /// </summary>

@@ -49,7 +49,7 @@ namespace fnrouter
         /// <summary>
         /// Наследуются ли файлы
         /// </summary>
-        bool inherit;
+        //bool inherit;
 
         Logging Log;
         /// <summary>
@@ -119,7 +119,7 @@ namespace fnrouter
                     return;
             }
 
-            inherit=LDecoder.CoverWords(); // Получаем параметры предыдущей строки
+            //inherit=LDecoder.CoverWords(); // Получаем параметры предыдущей строки
             
             // Rule не задано явно, копируем из section
             //if (!LDecoder.ContainsKey("RULE") && !String.IsNullOrEmpty(Par.Section))
@@ -1046,7 +1046,7 @@ namespace fnrouter
             {
                 FillSFiles();
                 
-                if (!inherit) // Нет наследования, составляем список файлов
+                if (!LDecoder.inherit && LDecoder.ContainsKey("S")) // Нет наследования, составляем список файлов
                 {
                     
                     Par.SaveSFiles(Rule.SFiles);
@@ -1067,7 +1067,7 @@ namespace fnrouter
             //Rule.Source = ReplaceVar.ReplDate(Rule.Source); // Подстановка текущих даты времени
             Rule.Contain = LDecoder.GetValue("CONTAIN");
             Rule.NOTContain = LDecoder.GetValue("NOTCONTAIN");
-            if (String.IsNullOrEmpty(Rule.Source) && !inherit) return;
+            if (String.IsNullOrEmpty(Rule.Source) && !LDecoder.inherit) return;
             if (Rule.Action == TAction.MoveNalogDir) return; // Перемещение каталога налоговой, файлов нет
 
             //Rule.SourceDir = Path.GetDirectoryName(Rule.Source);
@@ -1078,7 +1078,7 @@ namespace fnrouter
             string Exclude = LDecoder.GetValue("EXCLUDE"); // Исключаемые маски
             string Include = LDecoder.GetValue("INC"); // Включаемые маски
             DirInfo di;
-            if (inherit) // Наследование
+            if (LDecoder.inherit) // Наследование
             {
                 di = new DirInfo(Par.SFiles, Include, Exclude, Rule.Contain, Rule.NOTContain);
             }
