@@ -223,6 +223,11 @@ namespace fnrouter
                     sValue = GetFileListStr(SFiles, true);
                     str = str.Replace("%" + var + "%", sValue);
                 }
+                if (var.Equals("FileContent", StringComparison.CurrentCultureIgnoreCase)) // содержимое файла
+                {
+                    sValue = GetFileContent(SFiles);
+                    str = str.Replace("%" + var + "%", sValue);
+                }
                 if (var.Equals("ListFullFileName", StringComparison.CurrentCultureIgnoreCase)) // список длинных имен файлов
                 {
                     sValue = GetFileListStr(SFiles, false);
@@ -270,6 +275,30 @@ namespace fnrouter
                 var = GetStrVar(str, ReplType.FileName);
             }
             return str;
+        }
+        /// <summary>
+        /// Возвращает содержимое файлов. Кодировка 1251
+        /// </summary>
+        /// <param name="SFiles"></param>
+        /// <returns></returns>
+        private string GetFileContent(List<string> SFiles)
+        {
+            string itog = "";
+            foreach (string file in SFiles)
+            {
+                if (File.Exists(file))
+                {
+                    try
+                    {
+                        itog=itog+File.ReadAllText(file, Encoding.GetEncoding(1251));
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+            return itog;
         }
 
         #endregion
@@ -349,7 +378,7 @@ namespace fnrouter
             "yyMMdd","yyyyMM","HHmm"};
             
             FileOptions=new List<string>{"ListFileName","ListFullFileName","FullFileName",
-                "FileName","FileWithoutExt","ExtFile","Nalog"};
+                "FileName","FileWithoutExt","ExtFile","Nalog","FileContent"};
 
             //CoverKeys = new List<string> { "S", "Act", "CONTAIN", "Exclude", "INC" };
             
@@ -366,7 +395,8 @@ namespace fnrouter
             Options.Add("NewLine", Environment.NewLine);
             // Каталог программы
             string RootFolder; // Каталог запуска программы
-            RootFolder = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
+            //RootFolder = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
+            RootFolder = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             Options.Add("FNRouterDir", RootFolder);
             RootFolder = Path.Combine(RootFolder, "tmp");
             Options.Add("FNRouterTempDir", RootFolder);

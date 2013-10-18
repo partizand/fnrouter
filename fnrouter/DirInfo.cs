@@ -59,7 +59,7 @@ namespace fnrouter
 
         public DirInfo(string sPath, string Include, string Exclude)
         {
-            Separator = new char[3] { ',', '|', ';' };;
+            Separator = new char[3] { ',', '|', ';' };
 
             if (String.IsNullOrEmpty(Include) && !String.IsNullOrEmpty(sPath)) // Включаемая маска одна и укзана в Path и он не пуст
             {
