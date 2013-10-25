@@ -198,6 +198,9 @@ namespace fnrouter
                 case "NOTHING":
                     Rule.Action = TAction.Nothing;
                     break;
+                case "NO": // Аналог Nothing
+                    Rule.Action = TAction.Nothing;
+                    break;
                 default:
                     SetVoid();
                     return;

@@ -101,6 +101,9 @@ namespace fnrouter
         /// </summary>
         //List<string> CoverKeys;
 
+
+        
+
         public Params(string iniFile)
         {
             
@@ -218,40 +221,57 @@ namespace fnrouter
             var = GetStrVar(str, ReplType.FileName);
             while (!String.IsNullOrEmpty(var))
             {
-                if (var.Equals("ListFileName", StringComparison.CurrentCultureIgnoreCase)) // список коротких имен файлов
+                if (var.Equals(Const.FileOpt.ListFileName, StringComparison.CurrentCultureIgnoreCase)) // список коротких имен файлов
                 {
                     sValue = GetFileListStr(SFiles, true);
                     str = str.Replace("%" + var + "%", sValue);
                 }
-                if (var.Equals("FileContent", StringComparison.CurrentCultureIgnoreCase)) // содержимое файла
+                if (var.Equals(Const.FileOpt.FileContent, StringComparison.CurrentCultureIgnoreCase) || var.Equals("FileContent1251", StringComparison.CurrentCultureIgnoreCase)) // содержимое файла
                 {
-                    sValue = GetFileContent(SFiles);
+                    sValue = GetFileContent(SFiles,Encoding.GetEncoding(1251));
                     str = str.Replace("%" + var + "%", sValue);
                 }
-                if (var.Equals("ListFullFileName", StringComparison.CurrentCultureIgnoreCase)) // список длинных имен файлов
+                if (var.StartsWith(Const.FileOpt.FileContent, StringComparison.CurrentCultureIgnoreCase)) // содержимое файла
+                {
+
+                    string enc;
+                    if (var.Length > Const.FileOpt.FileContent.Length)
+                    {
+                        enc = var.Substring(Const.FileOpt.FileContent.Length);
+                    }
+                    else
+                    {
+                        enc = Options[Const.FileOpt.DefaultEncoding]; // Кодировка по умолчанию
+                    }
+
+                    sValue = GetFileContent(SFiles, Encoding.GetEncoding(enc));
+                    str = str.Replace("%" + var + "%", sValue);
+                }
+                
+                if (var.Equals(Const.FileOpt.ListFullFileName, StringComparison.CurrentCultureIgnoreCase)) // список длинных имен файлов
                 {
                     sValue = GetFileListStr(SFiles, false);
                     str = str.Replace("%" + var + "%", sValue);
                 }
-                if (var.Equals("FullFileName", StringComparison.CurrentCultureIgnoreCase)) // длинное имя файла
+                if (var.Equals(Const.FileOpt.FullFileName, StringComparison.CurrentCultureIgnoreCase)) // длинное имя файла
                 {
                     str = str.Replace("%" + var + "%", FileName);
                 }
-                if (var.Equals("FileName", StringComparison.CurrentCultureIgnoreCase)) // короткое имя файла
+                if (var.Equals(Const.FileOpt.FileName, StringComparison.CurrentCultureIgnoreCase)) // короткое имя файла
                 {
                     str = str.Replace("%" + var + "%", Path.GetFileName(FileName));
                 }
-                if (var.Equals("FileWithoutExt", StringComparison.CurrentCultureIgnoreCase)) // имя файла без раширения
+                if (var.Equals(Const.FileOpt.FileWithoutExt, StringComparison.CurrentCultureIgnoreCase)) // имя файла без раширения
                 {
                     str = str.Replace("%" + var + "%", Path.GetFileNameWithoutExtension(FileName));
                 }
-                if (var.Equals("ExtFile", StringComparison.CurrentCultureIgnoreCase)) // расширение
+                if (var.Equals(Const.FileOpt.ExtFile, StringComparison.CurrentCultureIgnoreCase)) // расширение
                 {
                     sValue = Path.GetExtension(FileName);
                     sValue = sValue.Replace(".", ""); // Убираем точку из раширения
                     str = str.Replace("%" + var + "%", sValue);
                 }
-                if (var.Equals("Nalog", StringComparison.CurrentCultureIgnoreCase)) // Налоговая, должна быть последняя в строке!
+                if (var.Equals(Const.FileOpt.Nalog, StringComparison.CurrentCultureIgnoreCase)) // Налоговая, должна быть последняя в строке!
                 {
                     str = str.Replace("%" + var + "%", ""); // Убираем %nalog% из пути
                     sValue = Path.GetExtension(FileName); // Расширение файла
@@ -281,7 +301,7 @@ namespace fnrouter
         /// </summary>
         /// <param name="SFiles"></param>
         /// <returns></returns>
-        private string GetFileContent(List<string> SFiles)
+        private string GetFileContent(List<string> SFiles, System.Text.Encoding Encode)
         {
             string itog = "";
             foreach (string file in SFiles)
@@ -290,7 +310,9 @@ namespace fnrouter
                 {
                     try
                     {
-                        itog=itog+File.ReadAllText(file, Encoding.GetEncoding(1251));
+                        itog = itog + File.ReadAllText(file, Encode);
+                        //itog=itog+File.ReadAllText(file, Encoding.GetEncoding(1251));
+                        //System.Text.Encoding.GetEncoding, можно использовать строки: windows-1251, cp866, utf-8, 
                     }
                     catch
                     {
@@ -377,8 +399,8 @@ namespace fnrouter
             "z","zz","zzz",
             "yyMMdd","yyyyMM","HHmm"};
             
-            FileOptions=new List<string>{"ListFileName","ListFullFileName","FullFileName",
-                "FileName","FileWithoutExt","ExtFile","Nalog","FileContent"};
+            FileOptions=new List<string>{Const.FileOpt.ListFileName, Const.FileOpt.ListFullFileName,Const.FileOpt.FullFileName,
+                Const.FileOpt.FileName,Const.FileOpt.FileWithoutExt,Const.FileOpt.ExtFile,Const.FileOpt.Nalog,Const.FileOpt.FileContent};
 
             //CoverKeys = new List<string> { "S", "Act", "CONTAIN", "Exclude", "INC" };
             
@@ -393,6 +415,7 @@ namespace fnrouter
             Options.Add("MachineName", System.Environment.MachineName);
             Options.Add("UserName", System.Environment.UserName);
             Options.Add("NewLine", Environment.NewLine);
+            Options.Add(Const.FileOpt.DefaultEncoding, "windows-1251"); // Кодировка по умолчанию
             // Каталог программы
             string RootFolder; // Каталог запуска программы
             //RootFolder = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
@@ -423,7 +446,7 @@ namespace fnrouter
 
             if (DateOptions.Exists(obj => String.Compare(obj, var, false) == 0))
                 return ReplType.CurDate;
-            if (FileOptions.Exists(obj => String.Compare(obj, var, true) == 0))
+            if (FileOptions.Exists(obj => var.StartsWith(obj, StringComparison.OrdinalIgnoreCase))) //String.Start(obj, var, true) == 0))
                 return ReplType.FileName;
             if (Options.ContainsKey(var))
                 return ReplType.Option;
