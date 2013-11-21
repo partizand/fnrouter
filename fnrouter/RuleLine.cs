@@ -1125,21 +1125,59 @@ namespace fnrouter
             string RenFile = Path.GetFileName(FileName);
             if (Rule.RenDos.Equals("RightLeft", StringComparison.CurrentCultureIgnoreCase))
             {
-                string Ext, onlyName;
-                int len;
-                Ext = Path.GetExtension(FileName);
-                onlyName = Path.GetFileNameWithoutExtension(FileName);
-                if (Ext.Length > 4) // Обрезаем расширение, если оно длиннее 3 символов
+                RenFile = Get8d3FileName(FileName);
+                
+                //string Ext, onlyName;
+                //int len;
+                //Ext = Path.GetExtension(FileName);
+                //onlyName = Path.GetFileNameWithoutExtension(FileName);
+                //if (Ext.Length > 4) // Обрезаем расширение, если оно длиннее 3 символов
+                //{
+                //    Ext = Ext.Substring(0, 3);
+                //}
+                //len=onlyName.Length;
+                //if (len>8)
+                //{
+                //    onlyName = onlyName.Substring(len - 8, 8);
+                //}
+                //RenFile = onlyName + Ext;
+            }
+            //if (Rule.RenDos.Equals("TKB", StringComparison.CurrentCultureIgnoreCase))
+            //{
+            //    RenFile = Get8d3FileName(FileName);
+            //    RenFile="t"+RenFile.Substring(1); // Добаляем t в начало файла
+            //}
+            return RenFile;
+        }
+        /// <summary>
+        /// Возвращает 8.3 имя файла из длинного
+        /// </summary>
+        /// <param name="FileName"></param>
+        /// <returns></returns>
+        string Get8d3FileName(string FileName)
+        {
+            string RenFile = Path.GetFileName(FileName);
+            string Ext, onlyName;
+            int len;
+            Ext = Path.GetExtension(FileName);
+            onlyName = Path.GetFileNameWithoutExtension(FileName);
+            if (Ext.Length > 4) // Обрезаем расширение, если оно длиннее 3 символов
+            {
+                Ext = Ext.Substring(0, 3);
+            }
+            len = onlyName.Length;
+            if (len > 8)
+            {
+                if (onlyName.StartsWith("1806872")) // ТКБ
                 {
-                    Ext = Ext.Substring(0, 4);
+                    onlyName = "t"+onlyName.Substring(len - 7, 7);
                 }
-                len=onlyName.Length;
-                if (len>8)
+                else
                 {
                     onlyName = onlyName.Substring(len - 8, 8);
                 }
-                RenFile = onlyName + Ext;
             }
+            RenFile = onlyName + Ext;
             return RenFile;
         }
 
