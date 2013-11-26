@@ -62,7 +62,9 @@ namespace fnrouter
         /// Режим отладки
         /// </summary>
         public bool Debug;
+
         
+
         /// <summary>
         /// Номер текущей обрабатываемой строки
         /// </summary>
@@ -226,23 +228,41 @@ namespace fnrouter
                     sValue = GetFileListStr(SFiles, true);
                     str = str.Replace("%" + var + "%", sValue);
                 }
-                if (var.Equals(Const.FileOpt.FileContent, StringComparison.CurrentCultureIgnoreCase) || var.Equals("FileContent1251", StringComparison.CurrentCultureIgnoreCase)) // содержимое файла
+                // Обрезание имени файла без расширения
+                if (var.StartsWith(Const.FileOpt.TruncFileWithoutExt, StringComparison.CurrentCultureIgnoreCase)) // содержимое файла
                 {
-                    sValue = GetFileContent(SFiles,Encoding.GetEncoding(1251));
+                    string iLen = GetVarParam(Const.FileOpt.TruncFileWithoutExt, var, "8");
+                    sValue = GetTruncFileWithoutExt(FileName, iLen);
                     str = str.Replace("%" + var + "%", sValue);
                 }
+                // Обрезание расширения
+                if (var.StartsWith(Const.FileOpt.TruncExtFile, StringComparison.CurrentCultureIgnoreCase)) // содержимое файла
+                {
+                    string iLen = GetVarParam(Const.FileOpt.TruncExtFile, var, "4");
+                    sValue = GetTruncExtFile(FileName, iLen);
+                    str = str.Replace("%" + var + "%", sValue);
+                }
+
+                // Обрезание имени файла до 8.3
+                if (var.Equals(Const.FileOpt.TruncFileName8d3, StringComparison.CurrentCultureIgnoreCase) ) 
+                {
+                   sValue = Get8d3FileName(FileName);
+                   str = str.Replace("%" + var + "%", sValue);
+                }
+                // Содержание файла
                 if (var.StartsWith(Const.FileOpt.FileContent, StringComparison.CurrentCultureIgnoreCase)) // содержимое файла
                 {
 
-                    string enc;
-                    if (var.Length > Const.FileOpt.FileContent.Length)
-                    {
-                        enc = var.Substring(Const.FileOpt.FileContent.Length);
-                    }
-                    else
-                    {
-                        enc = Options[Const.FileOpt.DefaultEncoding]; // Кодировка по умолчанию
-                    }
+                    string enc = GetVarParam(Const.FileOpt.FileContent, var, Options[Const.FileOpt.DefaultEncoding]);
+                    
+                    //if (var.Length > Const.FileOpt.FileContent.Length)
+                    //{
+                    //    enc = var.Substring(Const.FileOpt.FileContent.Length);
+                    //}
+                    //else
+                    //{
+                    //    enc = Options[Const.FileOpt.DefaultEncoding]; // Кодировка по умолчанию
+                    //}
 
                     sValue = GetFileContent(SFiles, Encoding.GetEncoding(enc));
                     str = str.Replace("%" + var + "%", sValue);
@@ -296,6 +316,102 @@ namespace fnrouter
             }
             return str;
         }
+        /// <summary>
+        /// Получение обрезанного имени файла без расширения
+        /// </summary>
+        /// <param name="FileName"></param>
+        /// <param name="TruncLen"></param>
+        /// <returns></returns>
+        string GetTruncFileWithoutExt(string FileName, string TruncLen)
+        {
+            
+            string onlyName;
+            int len;
+            int iTruncLen;
+
+            if (!int.TryParse(TruncLen, out iTruncLen))
+            {
+                iTruncLen = 8;
+            }
+            
+
+            onlyName = Path.GetFileNameWithoutExtension(FileName);
+            
+            len = onlyName.Length;
+            if (len > iTruncLen)
+            {
+                    onlyName = onlyName.Substring(len - iTruncLen, iTruncLen);
+            }
+
+            return onlyName;
+        }
+        /// <summary>
+        /// Получение обрезанного расширения
+        /// </summary>
+        /// <param name="FileName"></param>
+        /// <param name="TruncLen"></param>
+        /// <returns></returns>
+        string GetTruncExtFile(string FileName, string TruncLen)
+        {
+
+            string Ext;
+            //int len;
+            int iTruncLen;
+
+            if (!int.TryParse(TruncLen, out iTruncLen))
+            {
+                iTruncLen = 4;
+            }
+
+            Ext = Path.GetExtension(FileName);
+
+            //len = Ext.Length;
+            if (Ext.Length > iTruncLen)
+            {
+                Ext = Ext.Substring(0, iTruncLen);
+            }
+
+            return Ext;
+        }
+
+        /// <summary>
+        /// Возвращает 8.3 имя файла из длинного
+        /// </summary>
+        /// <param name="FileName"></param>
+        /// <returns></returns>
+        string Get8d3FileName(string FileName)
+        {
+
+
+            string RenFile;
+            string Ext, onlyName;
+
+            onlyName = GetTruncFileWithoutExt(FileName, "8");
+            Ext = GetTruncExtFile(FileName, "4");
+            //string RenFile = onlyName + Ext;
+            RenFile = onlyName + Ext;
+            
+            return RenFile;
+        }
+        /// <summary>
+        /// Возвращает параметр переменной (строка после имени переменной, т.е. для %FileNameZZZ% вернет ZZZ)
+        /// </summary>
+        /// <param name="ConstNameVar">Стандартное имя переменной (например FileName)</param>
+        /// <param name="var">Значение переменной (например FileNameZZZ)</param>
+        /// <returns>Параметр переменной (в примерах ZZZ)</returns>
+        private string GetVarParam(string ConstNameVar, string var,string Default)
+        {
+            
+            if (var.Length > ConstNameVar.Length)
+            {
+                return var.Substring(ConstNameVar.Length);
+            }
+            else
+            {
+                return Default;
+            }
+        }
+
         /// <summary>
         /// Возвращает содержимое файлов. Кодировка 1251
         /// </summary>
@@ -354,7 +470,7 @@ namespace fnrouter
         {
             if (String.IsNullOrEmpty(iniFile))
             {
-                iniFile = "frouter.ini";
+                iniFile = "fnrouter.ini";
             }
             
             
@@ -400,7 +516,8 @@ namespace fnrouter
             "yyMMdd","yyyyMM","HHmm"};
             
             FileOptions=new List<string>{Const.FileOpt.ListFileName, Const.FileOpt.ListFullFileName,Const.FileOpt.FullFileName,
-                Const.FileOpt.FileName,Const.FileOpt.FileWithoutExt,Const.FileOpt.ExtFile,Const.FileOpt.Nalog,Const.FileOpt.FileContent};
+                Const.FileOpt.FileName,Const.FileOpt.FileWithoutExt,Const.FileOpt.ExtFile,Const.FileOpt.Nalog,Const.FileOpt.FileContent,
+                Const.FileOpt.TruncFileName8d3,Const.FileOpt.TruncFileWithoutExt,Const.FileOpt.TruncExtFile};
 
             //CoverKeys = new List<string> { "S", "Act", "CONTAIN", "Exclude", "INC" };
             

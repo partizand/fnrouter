@@ -145,9 +145,9 @@ namespace fnrouter
                 return;
             }
 
-            sValue = LDecoder.GetValue("RENDOS");
+            sValue = LDecoder.GetValue("REN");
             sValue = sValue.ToUpper();
-            Rule.RenDos = sValue;
+            Rule.Ren = sValue;
 
             sValue = LDecoder.GetValue("ACT");
             sValue = sValue.ToUpper();
@@ -1107,7 +1107,12 @@ namespace fnrouter
             string shortFileName;
             foreach (string FullSFile in Rule.SFiles) // перебираем все исходные файлы
             {
-                shortFileName = GetRenFileName(FullSFile); // Переименование если нужно
+                //shortFileName = GetRenFileName(FullSFile); // Переименование если нужно
+                shortFileName = Path.GetFileName(FullSFile);
+                if (!String.IsNullOrEmpty(Rule.Ren))
+                {
+                    shortFileName = Par.ReplFile(Rule.Ren, FullSFile, Rule.SFiles); // Переименование
+                }
                 tDest = Par.ReplFile(Rule.Dest, FullSFile, Rule.SFiles); // Замена %file% в имени каталога приемника
                 Rule.DFiles.Add(Path.Combine(tDest,shortFileName));
             }
@@ -1120,66 +1125,49 @@ namespace fnrouter
         /// </summary>
         /// <param name="FileName"></param>
         /// <returns></returns>
-        string GetRenFileName(string FileName)
-        {
-            string RenFile = Path.GetFileName(FileName);
-            if (Rule.RenDos.Equals("RightLeft", StringComparison.CurrentCultureIgnoreCase))
-            {
-                RenFile = Get8d3FileName(FileName);
+        //string GetRenFileName(string FileName)
+        //{
+        //    string RenFile = Path.GetFileName(FileName);
+        //    if (Rule.RenDos.Equals("RightLeft", StringComparison.CurrentCultureIgnoreCase))
+        //    {
+        //        RenFile = Get8d3FileName(FileName);
                 
-                //string Ext, onlyName;
-                //int len;
-                //Ext = Path.GetExtension(FileName);
-                //onlyName = Path.GetFileNameWithoutExtension(FileName);
-                //if (Ext.Length > 4) // Обрезаем расширение, если оно длиннее 3 символов
-                //{
-                //    Ext = Ext.Substring(0, 3);
-                //}
-                //len=onlyName.Length;
-                //if (len>8)
-                //{
-                //    onlyName = onlyName.Substring(len - 8, 8);
-                //}
-                //RenFile = onlyName + Ext;
-            }
-            //if (Rule.RenDos.Equals("TKB", StringComparison.CurrentCultureIgnoreCase))
-            //{
-            //    RenFile = Get8d3FileName(FileName);
-            //    RenFile="t"+RenFile.Substring(1); // Добаляем t в начало файла
-            //}
-            return RenFile;
-        }
+                
+        //    }
+            
+        //    return RenFile;
+        //}
         /// <summary>
         /// Возвращает 8.3 имя файла из длинного
         /// </summary>
         /// <param name="FileName"></param>
         /// <returns></returns>
-        string Get8d3FileName(string FileName)
-        {
-            string RenFile = Path.GetFileName(FileName);
-            string Ext, onlyName;
-            int len;
-            Ext = Path.GetExtension(FileName);
-            onlyName = Path.GetFileNameWithoutExtension(FileName);
-            if (Ext.Length > 4) // Обрезаем расширение, если оно длиннее 3 символов
-            {
-                Ext = Ext.Substring(0, 3);
-            }
-            len = onlyName.Length;
-            if (len > 8)
-            {
-                if (onlyName.StartsWith("1806872")) // ТКБ
-                {
-                    onlyName = "t"+onlyName.Substring(len - 7, 7);
-                }
-                else
-                {
-                    onlyName = onlyName.Substring(len - 8, 8);
-                }
-            }
-            RenFile = onlyName + Ext;
-            return RenFile;
-        }
+        //string Get8d3FileName(string FileName)
+        //{
+        //    string RenFile = Path.GetFileName(FileName);
+        //    string Ext, onlyName;
+        //    int len;
+        //    Ext = Path.GetExtension(FileName);
+        //    onlyName = Path.GetFileNameWithoutExtension(FileName);
+        //    if (Ext.Length > 4) // Обрезаем расширение, если оно длиннее 3 символов
+        //    {
+        //        Ext = Ext.Substring(0, 3);
+        //    }
+        //    len = onlyName.Length;
+        //    if (len > 8)
+        //    {
+        //        if (onlyName.StartsWith("1806872")) // ТКБ
+        //        {
+        //            onlyName = "t"+onlyName.Substring(len - 7, 7);
+        //        }
+        //        else
+        //        {
+        //            onlyName = onlyName.Substring(len - 8, 8);
+        //        }
+        //    }
+        //    RenFile = onlyName + Ext;
+        //    return RenFile;
+        //}
 
         /// <summary>
         /// Содержится ли файле fi строка contain, если contain="" то всегда возвращается true

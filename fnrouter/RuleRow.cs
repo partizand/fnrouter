@@ -78,7 +78,11 @@ namespace fnrouter
         /// <summary>
         /// Правило переименования файлов
         /// </summary>
-        public string RenDos;
+        //public string RenDos;
+        /// <summary>
+        /// Правило переименования файлов
+        /// </summary>
+        public string Ren;
 
         public RuleRow()
         {
