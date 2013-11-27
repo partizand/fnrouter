@@ -420,12 +420,14 @@ namespace fnrouter
         private string GetFileContent(List<string> SFiles, System.Text.Encoding Encode)
         {
             string itog = "";
+            //string fContent;
             foreach (string file in SFiles)
             {
                 if (File.Exists(file))
                 {
                     try
                     {
+                        
                         itog = itog + File.ReadAllText(file, Encode);
                         //itog=itog+File.ReadAllText(file, Encoding.GetEncoding(1251));
                         //System.Text.Encoding.GetEncoding, можно использовать строки: windows-1251, cp866, utf-8, 
@@ -437,6 +439,25 @@ namespace fnrouter
                 }
             }
             return itog;
+        }
+
+        /// <summary>
+        /// Удаление управляющих символов из строки
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        string CleanString(string s)
+        {
+            if (!String.IsNullOrEmpty(s))
+            {
+                StringBuilder sb = new StringBuilder(s.Length);
+                foreach (char c in s)
+                {
+                    if (!Char.IsControl(c)) sb.Append(c);
+                }
+                s = sb.ToString();
+            }
+            return s;
         }
 
         #endregion
