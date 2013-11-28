@@ -222,7 +222,7 @@ namespace fnrouter
                 if (PosE > -1)
                 {
                     PosC = LineStr.IndexOf(";", PosE); // Позиция ';'
-                    if (PosC == -1) PosC = LineStr.Length - 1; // Если нет ; то берем конец строки
+                    if (PosC == -1) PosC = LineStr.Length; // Если нет ; то берем конец строки
                     KeyName = LineStr.Substring(CurPos, PosE-CurPos );
                     Value = LineStr.Substring(PosE + 1, PosC - PosE - 1);
                     //KeyName = KeyName.ToUpper();
