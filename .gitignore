@@ -2,7 +2,6 @@
 /fnrouter/obj
 /fnrouter/Properties
 *.suo
-*.sln
 *.html
 fnrouter.html
 readme.bat
